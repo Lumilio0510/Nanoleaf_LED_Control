@@ -12,7 +12,7 @@ function createWindow() {
     minHeight: 600,
     title: 'Softwaves LED Control',
     webPreferences: {
-      preload: join(__dirname, '../preload/preload.js'),
+      preload: join(__dirname, '../preload/preload.mjs'),
       contextIsolation: true,
       nodeIntegration: false
     }
