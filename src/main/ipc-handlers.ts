@@ -2,6 +2,8 @@ import { ipcMain, BrowserWindow } from 'electron'
 import { IPC } from '../shared/types'
 import * as deviceService from './device.service'
 import * as ledApi from './led-api.service'
+import * as skillService from './skill.service'
+import { executeSkill } from './skill-executor'
 
 export function registerHandlers() {
   // ======== 设备 ========
@@ -59,5 +61,32 @@ export function registerHandlers() {
 
   ipcMain.handle(IPC.CONTROL_EFFECT_LIST, async () => {
     return ledApi.getEffectList()
+  })
+
+  // ======== Skill ========
+  ipcMain.handle(IPC.SKILL_LIST, async () => {
+    return skillService.getSkills()
+  })
+
+  ipcMain.handle(IPC.SKILL_GET, async (_event, id: string) => {
+    return skillService.getSkill(id)
+  })
+
+  ipcMain.handle(IPC.SKILL_SAVE, async (_event, skill: any) => {
+    skillService.saveSkill(skill)
+    return skillService.getSkills()
+  })
+
+  ipcMain.handle(IPC.SKILL_DELETE, async (_event, id: string) => {
+    skillService.deleteSkill(id)
+    return skillService.getSkills()
+  })
+
+  ipcMain.handle(IPC.SKILL_EXECUTE, async (_event, skillId: string, params: Record<string, unknown>) => {
+    await executeSkill(skillId, skillService.getSkill, params)
+  })
+
+  ipcMain.handle(IPC.SKILL_EXPORT, async (_event, id: string) => {
+    return skillService.exportSkill(id)
   })
 }

@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import { IPC, DeviceConfig, DeviceState, DiscoveredDevice, EffectInfo } from '../shared/types'
+import { IPC, DeviceConfig, DeviceState, DiscoveredDevice, EffectInfo, Skill } from '../shared/types'
 
 const api = {
   // ======== 设备 ========
@@ -23,6 +23,14 @@ const api = {
   applyEffect: (effectId: string, params: Record<string, unknown>): Promise<void> =>
     ipcRenderer.invoke(IPC.CONTROL_APPLY_EFFECT, effectId, params),
   getEffectList: (): Promise<EffectInfo[]> => ipcRenderer.invoke(IPC.CONTROL_EFFECT_LIST),
+
+  // ======== Skill ========
+  getSkills: (): Promise<Skill[]> => ipcRenderer.invoke(IPC.SKILL_LIST),
+  getSkill: (id: string): Promise<Skill | null> => ipcRenderer.invoke(IPC.SKILL_GET, id),
+  saveSkill: (skill: Skill): Promise<Skill[]> => ipcRenderer.invoke(IPC.SKILL_SAVE, skill),
+  deleteSkill: (id: string): Promise<Skill[]> => ipcRenderer.invoke(IPC.SKILL_DELETE, id),
+  executeSkill: (skillId: string, params: Record<string, unknown>): Promise<void> =>
+    ipcRenderer.invoke(IPC.SKILL_EXECUTE, skillId, params),
 }
 
 contextBridge.exposeInMainWorld('electronAPI', api)
