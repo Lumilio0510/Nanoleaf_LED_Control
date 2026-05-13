@@ -62,6 +62,7 @@ export const api = {
   quickCommand: (commandId: string) => window.electronAPI.quickCommand(commandId),
   listCommands: () => window.electronAPI.listCommands(),
   getSessions: () => window.electronAPI.getSessions(),
+  getSession: (id: string) => window.electronAPI.getSession(id),
   createSession: () => window.electronAPI.createSession(),
   deleteSession: (id: string) => window.electronAPI.deleteSession(id),
   getSettings: () => window.electronAPI.getSettings(),
