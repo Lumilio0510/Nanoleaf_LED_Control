@@ -1,4 +1,8 @@
 node_modules/
 out/
 dist/
+.vite/
 .DS_Store
+*.log
+.env*
+crash-reports/

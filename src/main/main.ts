@@ -17,6 +17,10 @@ function createWindow() {
     }
   })
 
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription) => {
+    console.error(`窗口加载失败: ${errorCode} - ${errorDescription}`)
+  })
+
   if (process.env.ELECTRON_RENDERER_URL) {
     mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   } else {
