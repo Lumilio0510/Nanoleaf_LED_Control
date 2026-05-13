@@ -6,10 +6,10 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "rootDir": "./src",
     "outDir": "./out",
     "sourceMap": true,
-    "resolveJsonModule": true,
-    "declaration": true
+    "resolveJsonModule": true
   },
-  "include": ["src/main/**/*.ts", "src/shared/**/*.ts", "electron.vite.config.ts"]
+  "include": ["src/main/**/*.ts", "src/shared/**/*.ts"]
 }
