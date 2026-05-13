@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import { IPC, DeviceConfig, DeviceState, DiscoveredDevice, EffectInfo, Skill } from '../shared/types'
+import { IPC, DeviceConfig, DeviceState, DiscoveredDevice, EffectInfo, Skill, ChatMessage, ChatSession, QuickCommand, LLMConfig } from '../shared/types'
 
 const api = {
   // ======== 设备 ========
@@ -31,6 +31,34 @@ const api = {
   deleteSkill: (id: string): Promise<Skill[]> => ipcRenderer.invoke(IPC.SKILL_DELETE, id),
   executeSkill: (skillId: string, params: Record<string, unknown>): Promise<void> =>
     ipcRenderer.invoke(IPC.SKILL_EXECUTE, skillId, params),
+
+  // ======== Agent ========
+  chat: (sessionId: string, message: string): Promise<ChatMessage> =>
+    ipcRenderer.invoke(IPC.AGENT_CHAT, sessionId, message),
+  chatStream: (sessionId: string, message: string) => {
+    ipcRenderer.send(IPC.AGENT_CHAT_STREAM, sessionId, message)
+  },
+  onStreamChunk: (cb: (chunk: string) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, chunk: string) => cb(chunk)
+    ipcRenderer.on(IPC.AGENT_ON_STREAM_CHUNK, handler)
+    return () => ipcRenderer.removeListener(IPC.AGENT_ON_STREAM_CHUNK, handler)
+  },
+  quickCommand: (commandId: string) => {
+    ipcRenderer.send(IPC.AGENT_QUICK_COMMAND, commandId)
+  },
+  listCommands: (): Promise<QuickCommand[]> => ipcRenderer.invoke(IPC.AGENT_LIST_COMMANDS),
+
+  // ======== 聊天历史 ========
+  getSessions: (): Promise<ChatSession[]> => ipcRenderer.invoke(IPC.CHAT_SESSION_LIST),
+  getSession: (id: string): Promise<ChatSession | null> => ipcRenderer.invoke(IPC.CHAT_SESSION_GET, id),
+  createSession: (): Promise<ChatSession> => ipcRenderer.invoke(IPC.CHAT_SESSION_CREATE),
+  deleteSession: (id: string): Promise<void> => ipcRenderer.invoke(IPC.CHAT_SESSION_DELETE, id),
+
+  // ======== 设置 ========
+  getSettings: (): Promise<Record<string, unknown>> => ipcRenderer.invoke(IPC.SETTINGS_GET),
+  saveSettings: (settings: Record<string, unknown>): Promise<void> => ipcRenderer.invoke(IPC.SETTINGS_SAVE, settings),
+  getLlmConfig: (): Promise<LLMConfig> => ipcRenderer.invoke(IPC.SETTINGS_GET_LLM),
+  saveLlmConfig: (config: LLMConfig): Promise<void> => ipcRenderer.invoke(IPC.SETTINGS_SAVE_LLM, config),
 }
 
 contextBridge.exposeInMainWorld('electronAPI', api)
