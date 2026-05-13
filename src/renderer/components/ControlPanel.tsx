@@ -1,3 +1,13 @@
+import DeviceConnector from './DeviceConnector'
+import BasicControls from './BasicControls'
+import EffectList from './EffectList'
+
 export default function ControlPanel() {
-  return <div className="text-gray-400">控制面板（即将实现）</div>
+  return (
+    <div>
+      <DeviceConnector />
+      <BasicControls />
+      <EffectList />
+    </div>
+  )
 }
