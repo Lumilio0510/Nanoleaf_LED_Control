@@ -9,11 +9,15 @@ export const IPC = {
   DEVICE_REMOVE: 'device:remove',
   DEVICE_STATUS: 'device:status',
   DEVICE_ON_STATUS_CHANGE: 'device:onStatusChange',
+  DEVICE_AUTHENTICATE: 'device:authenticate',
+  DEVICE_IDENTIFY: 'device:identify',
+  DEVICE_GET_LOCAL_IP: 'device:getLocalIP',
 
   // 控制
   CONTROL_SWITCH: 'control:switch',
   CONTROL_BRIGHTNESS: 'control:brightness',
   CONTROL_COLOR: 'control:color',
+  CONTROL_CT: 'control:ct',
   CONTROL_APPLY_EFFECT: 'control:applyEffect',
   CONTROL_EFFECT_LIST: 'control:effectList',
 
@@ -31,6 +35,7 @@ export const IPC = {
   AGENT_QUICK_COMMAND: 'agent:quickCommand',
   AGENT_LIST_COMMANDS: 'agent:listCommands',
   AGENT_ON_STREAM_CHUNK: 'agent:onStreamChunk',
+  AGENT_ON_TOOL_STATUS: 'agent:onToolStatus',
 
   // 聊天历史
   CHAT_SESSION_LIST: 'chat:sessionList',
@@ -52,9 +57,10 @@ export interface DeviceConfig {
   host: string
   port: number
   note: string
+  authToken?: string
 }
 
-export type DeviceStatus = 'disconnected' | 'connecting' | 'connected' | 'error'
+export type DeviceStatus = 'disconnected' | 'connecting' | 'connected' | 'auth_required' | 'error'
 
 export interface DeviceState {
   config: DeviceConfig | null
@@ -66,6 +72,30 @@ export interface DiscoveredDevice {
   host: string
   port: number
   name?: string
+}
+
+// ============ 颜色 ============
+export interface ColorHSB {
+  h: number
+  s: number
+  b: number
+}
+
+// ============ Nanoleaf 设备信息 ============
+export interface NanoleafDeviceInfo {
+  name: string
+  serialNo: string
+  manufacturer: string
+  firmwareVersion: string
+  model: string
+  state: {
+    on: { value: boolean }
+    brightness: { value: number; max: number; min: number }
+    hue: { value: number; max: number; min: number }
+    sat: { value: number; max: number; min: number }
+    ct: { value: number; max: number; min: number }
+    colorMode: string
+  }
 }
 
 // ============ 灯效控制 ============
@@ -118,6 +148,15 @@ export interface Skill {
   mapping: SkillMapping
 }
 
+// ============ Agent Tool Calling ============
+export interface ToolCallRecord {
+  id: string
+  name: string
+  arguments: Record<string, unknown>
+  result?: unknown
+  error?: string
+}
+
 // ============ 聊天 ============
 export type MessageRole = 'user' | 'assistant' | 'system'
 
@@ -126,6 +165,7 @@ export interface ChatMessage {
   role: MessageRole
   content: string
   skill?: Skill
+  toolCalls?: ToolCallRecord[]
   timestamp: string
 }
 
