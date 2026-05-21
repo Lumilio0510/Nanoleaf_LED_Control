@@ -1,4 +1,4 @@
-import type { LLMAdapter, ChatMessage } from './types'
+import type { LLMAdapter, ChatMessage, ToolDef, ToolCallResponse } from './types'
 import type { LLMConfig } from '../../shared/types'
 
 export const ollamaAdapter: LLMAdapter = {
@@ -38,5 +38,9 @@ export const ollamaAdapter: LLMAdapter = {
       }
     }
     return full
+  },
+
+  async chatWithTools(_messages: ChatMessage[], _tools: ToolDef[], _config: LLMConfig): Promise<ToolCallResponse> {
+    throw new Error('Tool calling 仅支持 OpenAI 兼容 API，Ollama 暂不支持。请在设置中切换到 OpenAI 提供商。')
   }
 }
