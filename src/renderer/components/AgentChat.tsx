@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box'
 import { useChat } from '../hooks/useChat'
 import ChatWindow from './ChatWindow'
 import ChatInput from './ChatInput'
@@ -8,7 +9,7 @@ export default function AgentChat() {
   const chat = useChat()
 
   return (
-    <div className="flex flex-col h-full">
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <SessionManager
         sessions={chat.sessions}
         currentId={chat.currentSessionId}
@@ -17,8 +18,8 @@ export default function AgentChat() {
         onDelete={chat.deleteSession}
       />
       <QuickCommands onExecute={(prompt) => chat.sendStream(prompt)} />
-      <ChatWindow messages={chat.messages} streaming={chat.streaming} />
+      <ChatWindow messages={chat.messages} streaming={chat.streaming} toolStatuses={chat.toolStatuses} />
       <ChatInput onSend={chat.sendStream} disabled={chat.isStreaming} />
-    </div>
+    </Box>
   )
 }
