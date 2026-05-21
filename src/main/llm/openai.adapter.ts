@@ -1,4 +1,4 @@
-import type { LLMAdapter, ChatMessage } from './types'
+import type { LLMAdapter, ChatMessage, ToolDef, ToolCallResponse } from './types'
 import type { LLMConfig } from '../../shared/types'
 
 export const openaiAdapter: LLMAdapter = {
@@ -40,5 +40,38 @@ export const openaiAdapter: LLMAdapter = {
       }
     }
     return full
+  },
+
+  async chatWithTools(messages: ChatMessage[], tools: ToolDef[], config: LLMConfig): Promise<ToolCallResponse> {
+    const url = `${config.baseUrl || 'https://api.openai.com/v1'}/chat/completions`
+    const body: Record<string, unknown> = {
+      model: config.model || 'gpt-4o',
+      messages,
+      temperature: 0.7,
+      tools: tools.map(t => ({ type: 'function', function: t })),
+      tool_choice: 'auto'
+    }
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${config.apiKey}` },
+      body: JSON.stringify(body)
+    })
+    if (!res.ok) throw new Error(`OpenAI API 错误: ${res.status} ${await res.text()}`)
+    const data = await res.json() as {
+      choices: { finish_reason: string; message: { content: string | null; tool_calls?: { id: string; function: { name: string; arguments: string } }[] } }[]
+    }
+    const choice = data.choices[0]
+    if (choice.finish_reason === 'tool_calls' && choice.message.tool_calls) {
+      return {
+        finishReason: 'tool_calls',
+        content: choice.message.content,
+        toolCalls: choice.message.tool_calls.map(tc => ({
+          id: tc.id,
+          name: tc.function.name,
+          arguments: JSON.parse(tc.function.arguments)
+        }))
+      }
+    }
+    return { finishReason: 'stop', content: choice.message.content || '', toolCalls: [] }
   }
 }
