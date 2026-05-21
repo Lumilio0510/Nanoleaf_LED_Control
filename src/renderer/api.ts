@@ -1,4 +1,4 @@
-import type { DeviceConfig, DeviceState, DiscoveredDevice, EffectInfo, Skill, ChatSession, ChatMessage, QuickCommand, LLMConfig } from './types'
+import type { DeviceConfig, DeviceState, DiscoveredDevice, EffectInfo, Skill, ChatSession, ChatMessage, QuickCommand, LLMConfig, ToolCallRecord } from './types'
 
 declare global {
   interface Window {
@@ -11,9 +11,13 @@ declare global {
       removeDevice: (id: string) => Promise<DeviceConfig[]>
       getDeviceStatus: () => Promise<DeviceState>
       onDeviceStatusChange: (cb: (state: DeviceState) => void) => () => void
+      authenticate: (deviceId: string) => Promise<string>
+      identify: () => Promise<void>
+      getLocalIP: () => Promise<string>
       switchLight: (on: boolean) => Promise<void>
       setBrightness: (value: number) => Promise<void>
       setColor: (r: number, g: number, b: number) => Promise<void>
+      setColorTemperature: (value: number) => Promise<void>
       applyEffect: (effectId: string, params: Record<string, unknown>) => Promise<void>
       getEffectList: () => Promise<EffectInfo[]>
       getSkills: () => Promise<Skill[]>
@@ -47,9 +51,13 @@ export const api = {
   removeDevice: (id: string) => window.electronAPI.removeDevice(id),
   getDeviceStatus: () => window.electronAPI.getDeviceStatus(),
   onDeviceStatusChange: (cb: (state: DeviceState) => void) => window.electronAPI.onDeviceStatusChange(cb),
+  authenticate: (deviceId: string) => window.electronAPI.authenticate(deviceId),
+  identify: () => window.electronAPI.identify(),
+  getLocalIP: () => window.electronAPI.getLocalIP(),
   switchLight: (on: boolean) => window.electronAPI.switchLight(on),
   setBrightness: (value: number) => window.electronAPI.setBrightness(value),
   setColor: (r: number, g: number, b: number) => window.electronAPI.setColor(r, g, b),
+  setColorTemperature: (value: number) => window.electronAPI.setColorTemperature(value),
   applyEffect: (effectId: string, params: Record<string, unknown>) => window.electronAPI.applyEffect(effectId, params),
   getEffectList: () => window.electronAPI.getEffectList(),
   getSkills: () => window.electronAPI.getSkills(),
