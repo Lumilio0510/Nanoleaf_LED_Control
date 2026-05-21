@@ -16,6 +16,11 @@ function getLlmConfig(): LLMConfig {
 }
 
 function getApiDoc(): string {
+  if (!app.isPackaged) {
+    const projectDoc = join(app.getAppPath(), 'docs', 'Nanoleaf OpenAPI.md')
+    if (existsSync(projectDoc)) return readFileSync(projectDoc, 'utf-8')
+  }
+
   const dataDir = join(app.getPath('userData'), 'data')
   const docPath = join(dataDir, 'api-doc.md')
 
