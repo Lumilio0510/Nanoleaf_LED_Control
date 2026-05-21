@@ -1,11 +1,13 @@
-import { ipcMain, BrowserWindow } from 'electron'
+import electron from 'electron'
+const { ipcMain, BrowserWindow } = electron
 import { IPC } from '../shared/types'
 import * as deviceService from './device.service'
-import * as ledApi from './led-api.service'
+import * as nanoleafApi from './nanoleaf-api.service'
 import * as skillService from './skill.service'
 import { executeSkill } from './skill-executor'
 import * as agentService from './agent.service'
 import { readJSON, writeJSON } from './storage'
+import { rgbToHsb } from './color-converter'
 import type { LLMConfig } from '../shared/types'
 
 export function registerHandlers() {
@@ -38,6 +40,18 @@ export function registerHandlers() {
     return deviceService.getDeviceStatus()
   })
 
+  ipcMain.handle(IPC.DEVICE_AUTHENTICATE, async (_event, deviceId: string) => {
+    return deviceService.authenticateDevice(deviceId)
+  })
+
+  ipcMain.handle(IPC.DEVICE_IDENTIFY, async () => {
+    await deviceService.identifyDevice()
+  })
+
+  ipcMain.handle(IPC.DEVICE_GET_LOCAL_IP, async () => {
+    return deviceService.getLocalIP()
+  })
+
   // 设备状态有变化时，广播到所有窗口
   deviceService.onStatusChange((state) => {
     BrowserWindow.getAllWindows().forEach(win => {
@@ -47,23 +61,28 @@ export function registerHandlers() {
 
   // ======== 灯效控制 ========
   ipcMain.handle(IPC.CONTROL_SWITCH, async (_event, on: boolean) => {
-    await ledApi.switchLight(on)
+    await nanoleafApi.setPower(on)
   })
 
   ipcMain.handle(IPC.CONTROL_BRIGHTNESS, async (_event, value: number) => {
-    await ledApi.setBrightness(value)
+    await nanoleafApi.setBrightness(value)
   })
 
   ipcMain.handle(IPC.CONTROL_COLOR, async (_event, r: number, g: number, b: number) => {
-    await ledApi.setColor(r, g, b)
+    const hsb = rgbToHsb(r, g, b)
+    await nanoleafApi.setHSB(hsb.h, hsb.s, hsb.b)
   })
 
-  ipcMain.handle(IPC.CONTROL_APPLY_EFFECT, async (_event, effectId: string, params: Record<string, unknown>) => {
-    await ledApi.applyEffect(effectId, params)
+  ipcMain.handle(IPC.CONTROL_CT, async (_event, value: number) => {
+    await nanoleafApi.setColorTemperature(value)
+  })
+
+  ipcMain.handle(IPC.CONTROL_APPLY_EFFECT, async (_event, effectId: string, _params: Record<string, unknown>) => {
+    await nanoleafApi.setEffect(effectId)
   })
 
   ipcMain.handle(IPC.CONTROL_EFFECT_LIST, async () => {
-    return ledApi.getEffectList()
+    return nanoleafApi.getEffectsList()
   })
 
   // ======== Skill ========
@@ -103,10 +122,7 @@ export function registerHandlers() {
       sessionId,
       message,
       (chunk) => event.sender.send(IPC.AGENT_ON_STREAM_CHUNK, chunk),
-      (msg) => {
-        if (msg.skill) {
-          skillService.saveSkill(msg.skill)
-        }
+      (_msg) => {
         event.sender.send(IPC.AGENT_ON_STREAM_CHUNK, '__DONE__')
       }
     )
@@ -124,8 +140,7 @@ export function registerHandlers() {
         'default',
         cmd.prompt,
         (chunk) => event.sender.send(IPC.AGENT_ON_STREAM_CHUNK, chunk),
-        (msg) => {
-          if (msg.skill) skillService.saveSkill(msg.skill)
+        (_msg) => {
           event.sender.send(IPC.AGENT_ON_STREAM_CHUNK, '__DONE__')
         }
       )
