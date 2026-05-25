@@ -1,5 +1,5 @@
 import { Skill } from '../shared/types'
-import { sendRequest } from './led-api.service'
+import { sendRequest } from './nanoleaf-api.service'
 
 export function resolveParams(skill: Skill, values: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {}

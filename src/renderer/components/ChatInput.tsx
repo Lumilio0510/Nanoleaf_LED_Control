@@ -1,4 +1,8 @@
 import { useState, useRef } from 'react'
+import TextField from '@mui/material/TextField'
+import IconButton from '@mui/material/IconButton'
+import Stack from '@mui/material/Stack'
+import SendIcon from '@mui/icons-material/Send'
 
 interface Props {
   onSend: (text: string) => void
@@ -17,19 +21,25 @@ export default function ChatInput({ onSend, disabled }: Props) {
   }
 
   return (
-    <div className="flex gap-2">
-      <input
-        ref={inputRef}
-        className="flex-1 bg-gray-800 border border-gray-700 rounded px-4 py-2.5 text-sm"
+    <Stack direction="row" spacing={1}>
+      <TextField
+        inputRef={inputRef}
+        fullWidth
+        size="small"
         placeholder="描述你想要的灯效..."
         value={text}
         onChange={e => setText(e.target.value)}
-        onKeyDown={e => e.key === 'Enter' && handleSend()}
+        onKeyDown={e => { if (e.key === 'Enter') handleSend() }}
         disabled={disabled}
       />
-      <button onClick={handleSend} disabled={disabled || !text.trim()} className="px-5 py-2.5 bg-cyan-600 rounded text-sm hover:bg-cyan-500 disabled:opacity-50">
-        发送
-      </button>
-    </div>
+      <IconButton
+        color="primary"
+        onClick={handleSend}
+        disabled={disabled || !text.trim()}
+        sx={{ bgcolor: 'primary.main', color: 'white', borderRadius: 2, '&:hover': { bgcolor: 'primary.dark' }, '&.Mui-disabled': { opacity: 0.4 } }}
+      >
+        <SendIcon />
+      </IconButton>
+    </Stack>
   )
 }

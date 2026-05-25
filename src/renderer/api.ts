@@ -1,4 +1,4 @@
-import type { DeviceConfig, DeviceState, DiscoveredDevice, EffectInfo, Skill, ChatSession, ChatMessage, QuickCommand, LLMConfig, ToolCallRecord } from './types'
+import type { DeviceConfig, DeviceState, DiscoveredDevice, EffectInfo, EffectDetail, Skill, ChatSession, ChatMessage, QuickCommand, LLMConfig, ToolCallRecord } from './types'
 
 declare global {
   interface Window {
@@ -9,17 +9,23 @@ declare global {
       getDevices: () => Promise<DeviceConfig[]>
       addDevice: (config: DeviceConfig) => Promise<DeviceConfig[]>
       removeDevice: (id: string) => Promise<DeviceConfig[]>
+      renameDevice: (id: string, newName: string) => Promise<DeviceConfig[]>
       getDeviceStatus: () => Promise<DeviceState>
       onDeviceStatusChange: (cb: (state: DeviceState) => void) => () => void
       authenticate: (deviceId: string) => Promise<string>
       identify: () => Promise<void>
       getLocalIP: () => Promise<string>
+      pingAllDevices: () => Promise<Record<string, boolean>>
+      getOnlineStatus: () => Promise<Record<string, boolean>>
+      onOnlineChange: (cb: (data: { deviceId: string; online: boolean }) => void) => () => void
       switchLight: (on: boolean) => Promise<void>
       setBrightness: (value: number) => Promise<void>
       setColor: (r: number, g: number, b: number) => Promise<void>
       setColorTemperature: (value: number) => Promise<void>
       applyEffect: (effectId: string, params: Record<string, unknown>) => Promise<void>
+      writeEffect: (effectDef: Record<string, unknown>) => Promise<void>
       getEffectList: () => Promise<EffectInfo[]>
+      getEffectDetails: () => Promise<EffectDetail[]>
       getSkills: () => Promise<Skill[]>
       getSkill: (id: string) => Promise<Skill | null>
       saveSkill: (skill: Skill) => Promise<Skill[]>
@@ -49,17 +55,24 @@ export const api = {
   getDevices: () => window.electronAPI.getDevices(),
   addDevice: (config: DeviceConfig) => window.electronAPI.addDevice(config),
   removeDevice: (id: string) => window.electronAPI.removeDevice(id),
+  renameDevice: (id: string, newName: string) => window.electronAPI.renameDevice(id, newName),
   getDeviceStatus: () => window.electronAPI.getDeviceStatus(),
   onDeviceStatusChange: (cb: (state: DeviceState) => void) => window.electronAPI.onDeviceStatusChange(cb),
   authenticate: (deviceId: string) => window.electronAPI.authenticate(deviceId),
   identify: () => window.electronAPI.identify(),
   getLocalIP: () => window.electronAPI.getLocalIP(),
+  pingAllDevices: () => window.electronAPI.pingAllDevices(),
+  getOnlineStatus: () => window.electronAPI.getOnlineStatus(),
+  onOnlineChange: (cb: (data: { deviceId: string; online: boolean }) => void) =>
+    window.electronAPI.onOnlineChange(cb),
   switchLight: (on: boolean) => window.electronAPI.switchLight(on),
   setBrightness: (value: number) => window.electronAPI.setBrightness(value),
   setColor: (r: number, g: number, b: number) => window.electronAPI.setColor(r, g, b),
   setColorTemperature: (value: number) => window.electronAPI.setColorTemperature(value),
   applyEffect: (effectId: string, params: Record<string, unknown>) => window.electronAPI.applyEffect(effectId, params),
+  writeEffect: (effectDef: Record<string, unknown>) => window.electronAPI.writeEffect(effectDef),
   getEffectList: () => window.electronAPI.getEffectList(),
+  getEffectDetails: () => window.electronAPI.getEffectDetails(),
   getSkills: () => window.electronAPI.getSkills(),
   saveSkill: (skill: Skill) => window.electronAPI.saveSkill(skill),
   deleteSkill: (id: string) => window.electronAPI.deleteSkill(id),

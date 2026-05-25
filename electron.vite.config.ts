@@ -7,7 +7,8 @@ export default defineConfig({
     build: {
       outDir: 'out/main',
       rollupOptions: {
-        input: { main: resolve(__dirname, 'src/main/main.ts') }
+        input: { main: resolve(__dirname, 'src/main/main.ts') },
+        output: { format: 'cjs', entryFileNames: '[name].js' }
       }
     }
   },

@@ -38,12 +38,39 @@ export function useScan() {
   return { scan, scanning, found, setFound }
 }
 
-export function useEffects() {
-  const [effects, setEffects] = useState<EffectInfo[]>([])
+export function useOnlineStatus(): Record<string, boolean> {
+  const [status, setStatus] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
-    api.getEffectList().then(setEffects).catch(() => setEffects([]))
+    api.getOnlineStatus().then(setStatus)
+    return api.onOnlineChange(({ deviceId, online }) => {
+      setStatus(prev => ({ ...prev, [deviceId]: online }))
+    })
   }, [])
+
+  return status
+}
+
+export function useEffects() {
+  const [effects, setEffects] = useState<EffectInfo[]>([])
+  const device = useDeviceStatus()
+
+  useEffect(() => {
+    if (device.status === 'connected') {
+      Promise.all([
+        api.getEffectList(),
+        api.getEffectDetails().catch(() => [] as EffectInfo[])
+      ]).then(([list, details]) => {
+        const detailMap = new Map(details.map(d => [d.name, d]))
+        setEffects(list.map(e => {
+          const detail = detailMap.get(e.name)
+          return detail ? { ...e, palette: detail.palette, description: detail.description || e.description } : e
+        }))
+      }).catch(() => setEffects([]))
+    } else {
+      setEffects([])
+    }
+  }, [device.status])
 
   return effects
 }

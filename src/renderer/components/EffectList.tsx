@@ -1,84 +1,93 @@
 import { useState } from 'react'
-import { useEffects } from '../hooks/useDevices'
+import Card from '@mui/material/Card'
+import CardHeader from '@mui/material/CardHeader'
+import CardContent from '@mui/material/CardContent'
+import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import Grid from '@mui/material/Grid'
+import Box from '@mui/material/Box'
+import Stack from '@mui/material/Stack'
+import Alert from '@mui/material/Alert'
+import { useEffects, useDeviceStatus } from '../hooks/useDevices'
 import { api } from '../api'
+import ColorBar from './ColorBar'
 import type { EffectInfo } from '../types'
 
 export default function EffectList() {
   const effects = useEffects()
-  const [params, setParams] = useState<Record<string, unknown>>({})
+  const device = useDeviceStatus()
+  const [error, setError] = useState<string | null>(null)
+
+  const isConnected = device.status === 'connected'
 
   if (effects.length === 0) return null
 
   async function apply(effect: EffectInfo) {
-    await api.applyEffect(effect.id, params)
-  }
-
-  function renderParamControl(effect: EffectInfo) {
-    return effect.params.map(p => {
-      if (p.type === 'range') {
-        return (
-          <div key={p.key} className="flex items-center gap-2 mb-2">
-            <span className="text-xs text-gray-500 w-12">{p.label}</span>
-            <input
-              type="range" min={p.min ?? 0} max={p.max ?? 100}
-              defaultValue={p.default as number}
-              onChange={e => setParams(prev => ({ ...prev, [p.key]: Number(e.target.value) }))}
-              className="w-24 accent-cyan-500"
-            />
-            <span className="text-xs text-gray-400">{String(params[p.key] ?? p.default)}</span>
-          </div>
-        )
-      }
-      if (p.type === 'select' && p.options) {
-        return (
-          <div key={p.key} className="flex items-center gap-2 mb-2">
-            <span className="text-xs text-gray-500 w-12">{p.label}</span>
-            <select
-              onChange={e => setParams(prev => ({ ...prev, [p.key]: e.target.value }))}
-              className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs"
-            >
-              {p.options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          </div>
-        )
-      }
-      if (p.type === 'color') {
-        return (
-          <div key={p.key} className="flex items-center gap-2 mb-2">
-            <span className="text-xs text-gray-500 w-12">{p.label}</span>
-            <input
-              type="color" defaultValue={p.default as string}
-              onChange={e => setParams(prev => ({ ...prev, [p.key]: e.target.value }))}
-              className="w-6 h-6 rounded cursor-pointer bg-transparent"
-            />
-          </div>
-        )
-      }
-      return null
-    })
+    if (!isConnected) {
+      setError('请先连接设备')
+      return
+    }
+    setError(null)
+    try {
+      await api.applyEffect(effect.id, {})
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '应用灯效失败')
+    }
   }
 
   return (
-    <div className="bg-gray-900 rounded-lg border border-gray-800 p-4">
-      <h2 className="text-sm font-semibold text-gray-300 mb-3">灯效列表</h2>
-      <div className="grid grid-cols-2 gap-2">
-        {effects.map(effect => (
-          <div key={effect.id} className="bg-gray-800 rounded p-3 border border-gray-700">
-            <div className="flex items-start justify-between mb-1">
-              <div>
-                <div className="text-sm font-medium">{effect.name}</div>
-                <div className="text-xs text-gray-500">{effect.description}</div>
-              </div>
-              <button onClick={() => apply(effect)} className="px-3 py-1 text-xs bg-cyan-600 rounded hover:bg-cyan-500">应用</button>
-            </div>
-            {effect.params.length > 0 && (
-              <div className="mt-2 pt-2 border-t border-gray-700">
-                {renderParamControl(effect)}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
+    <Card>
+      <CardHeader title="灯效列表" slotProps={{ title: { variant: 'h6' } }} />
+      <CardContent sx={{ pt: 0 }}>
+        {!isConnected && (
+          <Alert severity="warning" sx={{ mb: 1.5, fontSize: '0.75rem', py: 0 }}>
+            未连接设备，请先在"设备连接"中选择并连接设备
+          </Alert>
+        )}
+
+        {error && (
+          <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 1.5, fontSize: '0.75rem', py: 0 }}>
+            {error}
+          </Alert>
+        )}
+
+        <Grid container spacing={2}>
+          {effects.map(effect => (
+            <Grid size={6} key={effect.id}>
+              <Box
+                sx={{
+                  bgcolor: 'action.hover',
+                  borderRadius: 3,
+                  p: 2,
+                  border: 1,
+                  borderColor: 'divider',
+                  '&:hover': { borderColor: 'grey.300' },
+                  transition: 'border-color 0.15s',
+                }}
+              >
+                <Stack direction="row" sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{effect.name}</Typography>
+                    <Typography variant="caption" color="text.disabled" sx={{ mt: 0.25 }}>
+                      {effect.description || '内置灯效'}
+                    </Typography>
+                  </Box>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => apply(effect)}
+                    disabled={!isConnected}
+                    sx={{ fontSize: '0.75rem', px: 1.5, py: 0.5, ml: 1, flexShrink: 0 }}
+                  >
+                    应用
+                  </Button>
+                </Stack>
+                <ColorBar palette={effect.palette ?? []} />
+              </Box>
+            </Grid>
+          ))}
+        </Grid>
+      </CardContent>
+    </Card>
   )
 }

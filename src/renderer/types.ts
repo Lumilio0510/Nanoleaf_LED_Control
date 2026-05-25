@@ -1,5 +1,5 @@
 export type { DeviceConfig, DeviceState, DeviceStatus, DiscoveredDevice } from '../shared/types'
-export type { EffectInfo, EffectParamDef } from '../shared/types'
+export type { EffectInfo, EffectDetail, EffectParamDef, EffectPaletteColor } from '../shared/types'
 export type { Skill, SkillMeta, SkillParam, SkillMapping } from '../shared/types'
 export type { ChatMessage, ChatSession, MessageRole } from '../shared/types'
 export type { QuickCommand, LLMConfig, LLMProvider } from '../shared/types'

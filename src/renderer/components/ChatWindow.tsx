@@ -12,6 +12,8 @@ import SaveAltIcon from '@mui/icons-material/SaveAlt'
 import { keyframes } from '@mui/system'
 import { api } from '../api'
 import type { ChatMessage } from '../types'
+import EffectCard from './EffectCard'
+import MarkdownContent from './MarkdownContent'
 
 interface ToolStatus {
   id: string
@@ -84,6 +86,33 @@ function SkillInlinePreview({ skill }: { skill: { meta: { id: string; name: stri
   )
 }
 
+function ToolCallResult({ name, args, result, error }: {
+  name: string
+  args: Record<string, unknown>
+  result?: unknown
+  error?: string
+}) {
+  if (error) {
+    return (
+      <Typography variant="caption" color="error.main">
+        ❌ {toolLabel(name)} 失败: {error}
+      </Typography>
+    )
+  }
+
+  // Render rich EffectCard for createEffect / previewEffect
+  if ((name === 'createEffect' || name === 'previewEffect') && args.effectDefinition) {
+    const def = args.effectDefinition as Record<string, unknown>
+    return <EffectCard effectDef={def} />
+  }
+
+  return (
+    <Typography variant="caption" color="text.secondary">
+      ✅ {toolLabel(name)}
+    </Typography>
+  )
+}
+
 export default function ChatWindow({ messages, streaming, toolStatuses }: { messages: ChatMessage[]; streaming: string; toolStatuses: ToolStatus[] }) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -123,18 +152,20 @@ export default function ChatWindow({ messages, streaming, toolStatuses }: { mess
                 ),
               }}
             >
-              <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-                {msg.content}
-              </Typography>
+              <MarkdownContent content={msg.content} variant={msg.role === 'user' ? 'user' : 'assistant'} />
               {msg.skill && <SkillInlinePreview skill={msg.skill} />}
               {msg.toolCalls && msg.toolCalls.length > 0 && (
                 <>
                   <Divider sx={{ my: 0.5 }} />
-                  <Stack spacing={0.25}>
+                  <Stack spacing={0.5}>
                     {msg.toolCalls.map(tc => (
-                      <Typography key={tc.id} variant="caption" color="text.secondary">
-                        {tc.error ? `❌ ${toolLabel(tc.name)} 失败` : `✅ ${toolLabel(tc.name)}`}
-                      </Typography>
+                      <ToolCallResult
+                        key={tc.id}
+                        name={tc.name}
+                        args={tc.arguments}
+                        result={tc.result}
+                        error={tc.error}
+                      />
                     ))}
                   </Stack>
                 </>
@@ -168,8 +199,8 @@ export default function ChatWindow({ messages, streaming, toolStatuses }: { mess
               bgcolor: 'action.hover',
             }}
           >
-            <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-              {streaming}
+            <Box sx={{ position: 'relative' }}>
+              <MarkdownContent content={streaming} variant="assistant" />
               <Box
                 component="span"
                 sx={{
@@ -177,12 +208,11 @@ export default function ChatWindow({ messages, streaming, toolStatuses }: { mess
                   width: 3,
                   height: 16,
                   bgcolor: 'primary.main',
-                  ml: 0.25,
                   verticalAlign: 'middle',
                   animation: `${blink} 1s step-end infinite`,
                 }}
               />
-            </Typography>
+            </Box>
           </Paper>
         </Stack>
       )}

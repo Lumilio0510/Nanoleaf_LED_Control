@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
 import { api } from '../api'
 import type { DeviceState } from '../types'
+
+const statusConfig: Record<string, { color: string; label: string }> = {
+  disconnected: { color: '#D0D4DA', label: '未连接' },
+  connecting: { color: '#F59E0B', label: '连接中' },
+  connected: { color: '#10B981', label: '已连接' },
+  auth_required: { color: '#F59E0B', label: '需认证' },
+  error: { color: '#EF4444', label: '错误' },
+}
 
 export default function StatusBar() {
   const [device, setDevice] = useState<DeviceState>({ config: null, status: 'disconnected' })
@@ -10,18 +20,38 @@ export default function StatusBar() {
     return api.onDeviceStatusChange(setDevice)
   }, [])
 
-  const statusDot = {
-    disconnected: '⚫',
-    connecting: '🟡',
-    connected: '🟢',
-    error: '🔴',
-  }[device.status]
+  const s = statusConfig[device.status]
 
   return (
-    <footer className="h-7 border-t border-gray-800 bg-gray-900 flex items-center px-4 text-xs text-gray-500">
-      <span className="mr-2">{statusDot}</span>
-      <span>{device.config ? `${device.config.name} | ${device.config.host}:${device.config.port}` : '未连接'}</span>
-      <span className="ml-auto">v1.0</span>
-    </footer>
+    <Box
+      component="footer"
+      sx={{
+        height: 28,
+        borderTop: 1,
+        borderColor: 'divider',
+        bgcolor: 'background.paper',
+        display: 'flex',
+        alignItems: 'center',
+        px: 2,
+      }}
+    >
+      <Box
+        sx={{
+          width: 6,
+          height: 6,
+          borderRadius: '50%',
+          bgcolor: s.color,
+          mr: 1,
+        }}
+      />
+      <Typography variant="caption" color="text.secondary">
+        {device.config
+          ? `${device.config.name}  ·  ${device.config.host}:${device.config.port}`
+          : s.label}
+      </Typography>
+      <Typography variant="caption" color="text.disabled" sx={{ ml: 'auto' }}>
+        v1.0
+      </Typography>
+    </Box>
   )
 }

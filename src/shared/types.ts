@@ -7,11 +7,15 @@ export const IPC = {
   DEVICE_LIST: 'device:list',
   DEVICE_ADD: 'device:add',
   DEVICE_REMOVE: 'device:remove',
+  DEVICE_RENAME: 'device:rename',
   DEVICE_STATUS: 'device:status',
   DEVICE_ON_STATUS_CHANGE: 'device:onStatusChange',
   DEVICE_AUTHENTICATE: 'device:authenticate',
   DEVICE_IDENTIFY: 'device:identify',
   DEVICE_GET_LOCAL_IP: 'device:getLocalIP',
+  DEVICE_PING_ALL: 'device:pingAll',
+  DEVICE_ONLINE_STATUS: 'device:onlineStatus',
+  DEVICE_ON_ONLINE_CHANGE: 'device:onOnlineChange',
 
   // 控制
   CONTROL_SWITCH: 'control:switch',
@@ -19,7 +23,9 @@ export const IPC = {
   CONTROL_COLOR: 'control:color',
   CONTROL_CT: 'control:ct',
   CONTROL_APPLY_EFFECT: 'control:applyEffect',
+  CONTROL_WRITE_EFFECT: 'control:writeEffect',
   CONTROL_EFFECT_LIST: 'control:effectList',
+  CONTROL_EFFECT_DETAILS: 'control:effectDetails',
 
   // Skill
   SKILL_LIST: 'skill:list',
@@ -99,11 +105,22 @@ export interface NanoleafDeviceInfo {
 }
 
 // ============ 灯效控制 ============
+export interface EffectPaletteColor {
+  r: number
+  g: number
+  b: number
+}
+
 export interface EffectInfo {
   id: string
   name: string
   description: string
   params: EffectParamDef[]
+  palette?: EffectPaletteColor[]
+}
+
+export interface EffectDetail extends EffectInfo {
+  palette: EffectPaletteColor[]
 }
 
 export interface EffectParamDef {

@@ -1,4 +1,16 @@
 import { useState, useEffect } from 'react'
+import CheckIcon from '@mui/icons-material/Check'
+import Card from '@mui/material/Card'
+import CardHeader from '@mui/material/CardHeader'
+import CardContent from '@mui/material/CardContent'
+import TextField from '@mui/material/TextField'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import Button from '@mui/material/Button'
+import Stack from '@mui/material/Stack'
+import Typography from '@mui/material/Typography'
+import FormControl from '@mui/material/FormControl'
+import InputLabel from '@mui/material/InputLabel'
 import { api } from '../api'
 import type { LLMConfig, LLMProvider } from '../types'
 
@@ -16,7 +28,12 @@ export default function LLMSettings() {
   }, [])
 
   function updateProvider(provider: LLMProvider) {
-    setConfig({ ...config, provider, baseUrl: defaults[provider].baseUrl || '', model: defaults[provider].model || '' })
+    setConfig({
+      ...config,
+      provider,
+      baseUrl: defaults[provider].baseUrl || '',
+      model: defaults[provider].model || '',
+    })
   }
 
   async function handleSave() {
@@ -26,59 +43,57 @@ export default function LLMSettings() {
   }
 
   return (
-    <div className="bg-gray-900 rounded-lg border border-gray-800 p-4">
-      <h3 className="text-sm font-semibold text-gray-300 mb-3">LLM 模型配置</h3>
+    <Card>
+      <CardHeader title="LLM 模型配置" slotProps={{ title: { variant: 'h6' } }} />
+      <CardContent sx={{ pt: 0 }}>
+        <Stack spacing={3}>
+          <FormControl size="small" fullWidth>
+            <InputLabel>模型类型</InputLabel>
+            <Select
+              label="模型类型"
+              value={config.provider}
+              onChange={e => updateProvider(e.target.value as LLMProvider)}
+            >
+              <MenuItem value="openai">OpenAI / 兼容 API</MenuItem>
+              <MenuItem value="ollama">Ollama（本地）</MenuItem>
+            </Select>
+          </FormControl>
 
-      <div className="space-y-3">
-        <div>
-          <label className="text-xs text-gray-500">模型类型</label>
-          <select
-            className="w-full mt-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm"
-            value={config.provider}
-            onChange={e => updateProvider(e.target.value as LLMProvider)}
-          >
-            <option value="openai">OpenAI / 兼容 API</option>
-            <option value="ollama">Ollama（本地）</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="text-xs text-gray-500">API 端点</label>
-          <input
-            className="w-full mt-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm"
+          <TextField
+            size="small"
+            fullWidth
+            label="API 端点"
             value={config.baseUrl}
             onChange={e => setConfig({ ...config, baseUrl: e.target.value })}
             placeholder={defaults[config.provider].baseUrl || ''}
           />
-        </div>
 
-        <div>
-          <label className="text-xs text-gray-500">模型名称</label>
-          <input
-            className="w-full mt-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm"
+          <TextField
+            size="small"
+            fullWidth
+            label="模型名称"
             value={config.model}
             onChange={e => setConfig({ ...config, model: e.target.value })}
             placeholder={defaults[config.provider].model || ''}
           />
-        </div>
 
-        {config.provider === 'openai' && (
-          <div>
-            <label className="text-xs text-gray-500">API Key</label>
-            <input
+          {config.provider === 'openai' && (
+            <TextField
+              size="small"
+              fullWidth
               type="password"
-              className="w-full mt-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm"
+              label="API Key"
               value={config.apiKey}
               onChange={e => setConfig({ ...config, apiKey: e.target.value })}
               placeholder="sk-..."
             />
-          </div>
-        )}
-      </div>
+          )}
+        </Stack>
 
-      <button onClick={handleSave} className="mt-4 px-4 py-2 text-sm bg-cyan-600 rounded hover:bg-cyan-500">
-        {saved ? '已保存' : '保存配置'}
-      </button>
-    </div>
+        <Button variant="contained" onClick={handleSave} sx={{ mt: 3 }}>
+          {saved ? <><CheckIcon sx={{ fontSize: 16, mr: 0.5 }} />已保存</> : '保存配置'}
+        </Button>
+      </CardContent>
+    </Card>
   )
 }

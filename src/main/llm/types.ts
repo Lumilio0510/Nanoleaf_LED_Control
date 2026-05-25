@@ -2,8 +2,10 @@ import type { LLMConfig } from '../../shared/types'
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'
-  content: string
+  content: string | null
   tool_call_id?: string
+  tool_calls?: { id: string; type: 'function'; function: { name: string; arguments: string } }[]
+  reasoning_content?: string
 }
 
 export interface ToolDef {
@@ -26,6 +28,7 @@ export interface ToolCallResponse {
   finishReason: 'stop' | 'tool_calls'
   content: string | null
   toolCalls: ToolCall[]
+  reasoningContent?: string
 }
 
 export interface LLMAdapter {

@@ -5,6 +5,33 @@ import type { ToolDef } from '../llm/types'
 
 type ToolExecutor = (args: Record<string, unknown>) => Promise<unknown>
 
+// 规范化 LLM 生成的不规范字段名，如 Palette → palette
+function normalizeEffectDef(def: Record<string, unknown>): Record<string, unknown> {
+  const normalized = { ...def }
+
+  // 修复常见的字段名大小写问题：Palette → palette
+  if ('Palette' in normalized && !('palette' in normalized)) {
+    normalized.palette = normalized.Palette
+    delete normalized.Palette
+  }
+  if ('Palette' in normalized && 'palette' in normalized) {
+    delete normalized.Palette
+  }
+
+  // 规范化 palette 数组元素的字段名
+  if (Array.isArray(normalized.palette)) {
+    normalized.palette = (normalized.palette as Record<string, unknown>[]).map(c => {
+      const entry: Record<string, unknown> = {}
+      for (const [k, v] of Object.entries(c)) {
+        entry[k.toLowerCase()] = v
+      }
+      return entry
+    })
+  }
+
+  return normalized
+}
+
 const PLUGIN_UUIDS: Record<string, string> = {
   flow: '027842e4-e1d6-4a4c-a731-be74a1ebd4cf',
   wheel: '6970681a-20b5-4c5e-8813-bdaebc4ee4fa',
@@ -62,16 +89,17 @@ export const skillToolDefs: ToolDef[] = [
 
 export const skillExecutors: Record<string, ToolExecutor> = {
   createEffect: async (args) => {
-    const def = args.effectDefinition as Record<string, unknown>
+    const def = normalizeEffectDef(args.effectDefinition as Record<string, unknown>)
     const writePayload: Record<string, unknown> = { command: 'add', ...def }
     await nanoleafApi.sendRequest('PUT', '/effects', { write: writePayload })
 
     const skillId = randomUUID()
+    const pluginName = typeof def.pluginUuid === 'string' ? PLUGIN_UUIDS[def.pluginUuid] : undefined
     const skill = {
       meta: {
         id: skillId,
         name: def.animName as string,
-        description: `由 AI 生成的 ${def.animType} 灯效`,
+        description: `由 AI 生成的 ${def.animType} 灯效${pluginName ? ` (${pluginName})` : ''}`,
         tags: ['AI生成'],
         version: 1,
         createdAt: new Date().toISOString(),
@@ -84,10 +112,10 @@ export const skillExecutors: Record<string, ToolExecutor> = {
       }
     }
     skillService.saveSkill(skill)
-    return { skillId: skill.meta.id, skillName: skill.meta.name, effectDef: def }
+    return { skillId: skill.meta.id, skillName: skill.meta.name, effectDef: def, pluginName: pluginName || null }
   },
   previewEffect: async (args) => {
-    const def = args.effectDefinition as Record<string, unknown>
+    const def = normalizeEffectDef(args.effectDefinition as Record<string, unknown>)
     const duration = (args.duration as number) || 10
     const displayPayload: Record<string, unknown> = { command: 'display', duration, version: '2.0', ...def }
     await nanoleafApi.sendRequest('PUT', '/effects', { write: displayPayload })

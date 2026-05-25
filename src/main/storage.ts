@@ -1,4 +1,5 @@
-import { app } from 'electron'
+import electron from 'electron'
+const { app } = electron
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from 'fs'
 import { join } from 'path'
 

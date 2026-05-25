@@ -6,3 +6,5 @@ dist/
 *.log
 .env*
 crash-reports/
+.claude/
+.superpowers/

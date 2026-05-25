@@ -13,7 +13,8 @@ import type { LLMConfig } from '../shared/types'
 export function registerHandlers() {
   // ======== 设备 ========
   ipcMain.handle(IPC.DEVICE_SCAN, async () => {
-    return deviceService.scanNetwork()
+    const raw = await deviceService.scanNetwork()
+    return deviceService.crossReferenceScan(raw)
   })
 
   ipcMain.handle(IPC.DEVICE_CONNECT, async (_event, deviceId: string) => {
@@ -36,6 +37,10 @@ export function registerHandlers() {
     return deviceService.removeDevice(id)
   })
 
+  ipcMain.handle(IPC.DEVICE_RENAME, async (_event, id: string, newName: string) => {
+    return deviceService.renameDevice(id, newName)
+  })
+
   ipcMain.handle(IPC.DEVICE_STATUS, async () => {
     return deviceService.getDeviceStatus()
   })
@@ -52,10 +57,25 @@ export function registerHandlers() {
     return deviceService.getLocalIP()
   })
 
+  ipcMain.handle(IPC.DEVICE_PING_ALL, async () => {
+    return deviceService.pingAllDevices()
+  })
+
+  ipcMain.handle(IPC.DEVICE_ONLINE_STATUS, async () => {
+    return deviceService.getOnlineStatus()
+  })
+
   // 设备状态有变化时，广播到所有窗口
   deviceService.onStatusChange((state) => {
     BrowserWindow.getAllWindows().forEach(win => {
       win.webContents.send(IPC.DEVICE_ON_STATUS_CHANGE, state)
+    })
+  })
+
+  // 设备在线状态变化时，广播到所有窗口
+  deviceService.onOnlineChange((deviceId, online) => {
+    BrowserWindow.getAllWindows().forEach(win => {
+      win.webContents.send(IPC.DEVICE_ON_ONLINE_CHANGE, { deviceId, online })
     })
   })
 
@@ -81,8 +101,16 @@ export function registerHandlers() {
     await nanoleafApi.setEffect(effectId)
   })
 
+  ipcMain.handle(IPC.CONTROL_WRITE_EFFECT, async (_event, effectDef: Record<string, unknown>) => {
+    await nanoleafApi.sendRequest('PUT', '/effects', { write: effectDef })
+  })
+
   ipcMain.handle(IPC.CONTROL_EFFECT_LIST, async () => {
     return nanoleafApi.getEffectsList()
+  })
+
+  ipcMain.handle(IPC.CONTROL_EFFECT_DETAILS, async () => {
+    return nanoleafApi.getEffectDetails()
   })
 
   // ======== Skill ========

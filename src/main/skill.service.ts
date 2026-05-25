@@ -1,7 +1,8 @@
 import { Skill } from '../shared/types'
 import { ensureDir, listDir, deleteFile } from './storage'
 import { join } from 'path'
-import { app } from 'electron'
+import electron from 'electron'
+const { app } = electron
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 
 const SKILLS_DIR = 'skills'

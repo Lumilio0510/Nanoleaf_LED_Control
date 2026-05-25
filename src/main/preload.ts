@@ -1,5 +1,6 @@
-import { contextBridge, ipcRenderer } from 'electron'
-import { IPC, DeviceConfig, DeviceState, DiscoveredDevice, EffectInfo, Skill, ChatMessage, ChatSession, QuickCommand, LLMConfig } from '../shared/types'
+import electron from 'electron'
+const { contextBridge, ipcRenderer } = electron
+import { IPC, DeviceConfig, DeviceState, DiscoveredDevice, EffectInfo, EffectDetail, Skill, ChatMessage, ChatSession, QuickCommand, LLMConfig } from '../shared/types'
 
 const api = {
   // ======== 设备 ========
@@ -9,20 +10,35 @@ const api = {
   getDevices: (): Promise<DeviceConfig[]> => ipcRenderer.invoke(IPC.DEVICE_LIST),
   addDevice: (config: DeviceConfig): Promise<DeviceConfig[]> => ipcRenderer.invoke(IPC.DEVICE_ADD, config),
   removeDevice: (id: string): Promise<DeviceConfig[]> => ipcRenderer.invoke(IPC.DEVICE_REMOVE, id),
+  renameDevice: (id: string, newName: string): Promise<DeviceConfig[]> => ipcRenderer.invoke(IPC.DEVICE_RENAME, id, newName),
   getDeviceStatus: (): Promise<DeviceState> => ipcRenderer.invoke(IPC.DEVICE_STATUS),
   onDeviceStatusChange: (cb: (state: DeviceState) => void) => {
     const handler = (_event: Electron.IpcRendererEvent, state: DeviceState) => cb(state)
     ipcRenderer.on(IPC.DEVICE_ON_STATUS_CHANGE, handler)
     return () => ipcRenderer.removeListener(IPC.DEVICE_ON_STATUS_CHANGE, handler)
   },
+  authenticate: (deviceId: string): Promise<string> => ipcRenderer.invoke(IPC.DEVICE_AUTHENTICATE, deviceId),
+  identify: (): Promise<void> => ipcRenderer.invoke(IPC.DEVICE_IDENTIFY),
+  getLocalIP: (): Promise<string> => ipcRenderer.invoke(IPC.DEVICE_GET_LOCAL_IP),
+  pingAllDevices: (): Promise<Record<string, boolean>> => ipcRenderer.invoke(IPC.DEVICE_PING_ALL),
+  getOnlineStatus: (): Promise<Record<string, boolean>> => ipcRenderer.invoke(IPC.DEVICE_ONLINE_STATUS),
+  onOnlineChange: (cb: (data: { deviceId: string; online: boolean }) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, data: { deviceId: string; online: boolean }) => cb(data)
+    ipcRenderer.on(IPC.DEVICE_ON_ONLINE_CHANGE, handler)
+    return () => ipcRenderer.removeListener(IPC.DEVICE_ON_ONLINE_CHANGE, handler)
+  },
 
   // ======== 灯效控制 ========
   switchLight: (on: boolean): Promise<void> => ipcRenderer.invoke(IPC.CONTROL_SWITCH, on),
   setBrightness: (value: number): Promise<void> => ipcRenderer.invoke(IPC.CONTROL_BRIGHTNESS, value),
   setColor: (r: number, g: number, b: number): Promise<void> => ipcRenderer.invoke(IPC.CONTROL_COLOR, r, g, b),
+  setColorTemperature: (value: number): Promise<void> => ipcRenderer.invoke(IPC.CONTROL_CT, value),
   applyEffect: (effectId: string, params: Record<string, unknown>): Promise<void> =>
     ipcRenderer.invoke(IPC.CONTROL_APPLY_EFFECT, effectId, params),
+  writeEffect: (effectDef: Record<string, unknown>): Promise<void> =>
+    ipcRenderer.invoke(IPC.CONTROL_WRITE_EFFECT, effectDef),
   getEffectList: (): Promise<EffectInfo[]> => ipcRenderer.invoke(IPC.CONTROL_EFFECT_LIST),
+  getEffectDetails: (): Promise<EffectDetail[]> => ipcRenderer.invoke(IPC.CONTROL_EFFECT_DETAILS),
 
   // ======== Skill ========
   getSkills: (): Promise<Skill[]> => ipcRenderer.invoke(IPC.SKILL_LIST),

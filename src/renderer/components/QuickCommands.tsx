@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import Chip from '@mui/material/Chip'
+import Stack from '@mui/material/Stack'
 import { api } from '../api'
 import type { QuickCommand } from '../types'
 
@@ -13,17 +15,26 @@ export default function QuickCommands({ onExecute }: Props) {
     api.listCommands().then(setCommands)
   }, [])
 
+  if (commands.length === 0) return null
+
   return (
-    <div className="flex gap-2 flex-wrap mb-3">
+    <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
       {commands.map(cmd => (
-        <button
+        <Chip
           key={cmd.id}
+          label={cmd.label}
           onClick={() => onExecute(cmd.prompt)}
-          className="px-3 py-1.5 text-xs bg-gray-800 border border-gray-700 rounded-full hover:bg-gray-700 hover:border-gray-600 transition-colors"
-        >
-          {cmd.label}
-        </button>
+          variant="outlined"
+          size="small"
+          sx={{
+            borderRadius: 4,
+            borderColor: 'divider',
+            color: 'text.secondary',
+            bgcolor: 'background.paper',
+            '&:hover': { bgcolor: 'action.hover', color: 'text.primary', borderColor: 'grey.300' },
+          }}
+        />
       ))}
-    </div>
+    </Stack>
   )
 }

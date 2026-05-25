@@ -1,3 +1,11 @@
+import Card from '@mui/material/Card'
+import CardHeader from '@mui/material/CardHeader'
+import CardContent from '@mui/material/CardContent'
+import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import Stack from '@mui/material/Stack'
+import Paper from '@mui/material/Paper'
+import Box from '@mui/material/Box'
 import { useSavedDevices } from '../hooks/useDevices'
 import { api } from '../api'
 
@@ -10,23 +18,56 @@ export default function DeviceSettings() {
   }
 
   return (
-    <div className="bg-gray-900 rounded-lg border border-gray-800 p-4">
-      <h3 className="text-sm font-semibold text-gray-300 mb-3">已保存设备</h3>
-      {devices.length === 0 ? (
-        <div className="text-sm text-gray-500">暂无设备，请到控制面板添加</div>
-      ) : (
-        <div className="space-y-2">
-          {devices.map(d => (
-            <div key={d.id} className="flex items-center justify-between bg-gray-800 rounded p-3">
-              <div>
-                <div className="text-sm">{d.name}</div>
-                <div className="text-xs text-gray-500">{d.host}:{d.port} {d.note && `— ${d.note}`}</div>
-              </div>
-              <button onClick={() => handleRemove(d.id)} className="text-xs px-3 py-1 bg-gray-700 rounded hover:bg-red-600 text-gray-400 hover:text-white">删除</button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    <Card>
+      <CardHeader title="已保存设备" slotProps={{ title: { variant: 'h6' } }} />
+      <CardContent sx={{ pt: 0 }}>
+        {devices.length === 0 ? (
+          <Typography variant="body2" color="text.disabled" textAlign="center" sx={{ py: 4 }}>
+            暂无设备，请到控制面板添加
+          </Typography>
+        ) : (
+          <Stack spacing={1}>
+            {devices.map(d => (
+              <Paper
+                key={d.id}
+                variant="outlined"
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  bgcolor: 'action.hover',
+                  borderRadius: 3,
+                  '&:hover': { borderColor: 'grey.300' },
+                  transition: 'border-color 0.15s',
+                }}
+              >
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>{d.name}</Typography>
+                  <Typography variant="caption" color="text.disabled" sx={{ mt: 0.25 }}>
+                    {d.host}:{d.port}
+                    {d.note && <span> — {d.note}</span>}
+                  </Typography>
+                </Box>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  size="small"
+                  onClick={() => handleRemove(d.id)}
+                  sx={{
+                    fontSize: '0.75rem',
+                    px: 1.5,
+                    py: 0.5,
+                    '&:hover': { color: 'error.main', borderColor: 'error.main', bgcolor: 'rgba(239,68,68,0.06)' },
+                  }}
+                >
+                  删除
+                </Button>
+              </Paper>
+            ))}
+          </Stack>
+        )}
+      </CardContent>
+    </Card>
   )
 }

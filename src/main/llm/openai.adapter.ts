@@ -58,7 +58,7 @@ export const openaiAdapter: LLMAdapter = {
     })
     if (!res.ok) throw new Error(`OpenAI API 错误: ${res.status} ${await res.text()}`)
     const data = await res.json() as {
-      choices: { finish_reason: string; message: { content: string | null; tool_calls?: { id: string; function: { name: string; arguments: string } }[] } }[]
+      choices: { finish_reason: string; message: { content: string | null; reasoning_content?: string; tool_calls?: { id: string; function: { name: string; arguments: string } }[] } }[]
     }
     const choice = data.choices[0]
     if (choice.finish_reason === 'tool_calls' && choice.message.tool_calls) {
@@ -69,9 +69,10 @@ export const openaiAdapter: LLMAdapter = {
           id: tc.id,
           name: tc.function.name,
           arguments: JSON.parse(tc.function.arguments)
-        }))
+        })),
+        reasoningContent: choice.message.reasoning_content
       }
     }
-    return { finishReason: 'stop', content: choice.message.content || '', toolCalls: [] }
+    return { finishReason: 'stop', content: choice.message.content || '', toolCalls: [], reasoningContent: choice.message.reasoning_content }
   }
 }

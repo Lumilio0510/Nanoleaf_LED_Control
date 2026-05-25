@@ -4,17 +4,22 @@
   "description": "",
   "main": "./out/main/main.js",
   "scripts": {
-    "dev": "electron-vite dev",
+    "dev": "node dev.mjs",
     "build": "electron-vite build",
     "preview": "electron-vite preview"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.0.1",
+    "@mui/material": "^9.0.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "uuid": "^14.0.0"
   },
   "devDependencies": {
@@ -23,10 +28,10 @@
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.5.0",
-    "electron": "^42.0.1",
+    "cross-env": "^10.1.0",
+    "electron": "^30.0.0",
     "electron-vite": "^5.0.0",
     "postcss": "^8.5.14",
-    "tailwindcss": "^3.4.19",
     "typescript": "^6.0.3",
     "vite": "^5.4.21"
   }

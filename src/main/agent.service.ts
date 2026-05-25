@@ -59,10 +59,14 @@ ${deviceContext}
 - 创建灯效 → 调用 createEffect 工具
 - 不知道当前状态时先查询再操作
 
+## 回复风格
+- 回复简洁，直接给出结果和关键信息
+- 谨慎使用 emoji，仅在对用户体验有明显提升的关键处（如成功/失败提示）偶尔使用，避免随处可见
+
 ## createEffect 规则（重要）
 生成灯效时，优先使用 plugin 类型（动态特效）：
 - 选择最匹配的 pluginUuid（flow=流动渐变, wheel=旋转渐变, explode=爆炸扩散, fade=同步渐变, random=随机变化, highlight=高亮）
-- palette 指定 2-6 个 HSB 颜色（hue:0-360, saturation:0-100, brightness:0-100）
+- palette（注意全小写）指定 2-6 个 HSB 颜色（hue:0-360, saturation:0-100, brightness:0-100）
 - pluginOptions 设置合理参数值（transTime: 过渡时间 1-600 单位0.1秒, loop: 是否循环, linDirection: 方向等）
 - animName 用中文描述性名称
 - 版本字段 version 固定为 "2.0"
@@ -88,6 +92,7 @@ async function runWithTools(messages: LLMMessage[]): Promise<{ content: string; 
       return { content: response.content || '', toolCalls: toolCallRecords }
     }
 
+    const records: ToolCallRecord[] = []
     for (const tc of response.toolCalls) {
       const record: ToolCallRecord = { id: tc.id, name: tc.name, arguments: tc.arguments }
       try {
@@ -95,9 +100,25 @@ async function runWithTools(messages: LLMMessage[]): Promise<{ content: string; 
       } catch (err) {
         record.error = err instanceof Error ? err.message : String(err)
       }
+      records.push(record)
       toolCallRecords.push(record)
-      messages.push({ role: 'assistant', content: '' })
-      messages.push({ role: 'tool', content: JSON.stringify(record.error ? { error: record.error } : record.result), tool_call_id: tc.id })
+    }
+    messages.push({
+      role: 'assistant',
+      content: null,
+      tool_calls: response.toolCalls.map(tc => ({
+        id: tc.id,
+        type: 'function' as const,
+        function: { name: tc.name, arguments: JSON.stringify(tc.arguments) }
+      })),
+      reasoning_content: response.reasoningContent
+    })
+    for (const record of records) {
+      messages.push({
+        role: 'tool',
+        content: JSON.stringify(record.error ? { error: record.error } : record.result),
+        tool_call_id: record.id
+      })
     }
   }
 
@@ -132,6 +153,7 @@ async function runWithToolsStream(
       onChunk(`__TOOL_START__${JSON.stringify({ id: tc.id, name: tc.name, args: tc.arguments })}`)
     }
 
+    const records: ToolCallRecord[] = []
     for (const tc of response.toolCalls) {
       const record: ToolCallRecord = { id: tc.id, name: tc.name, arguments: tc.arguments }
       try {
@@ -141,9 +163,25 @@ async function runWithToolsStream(
         record.error = err instanceof Error ? err.message : String(err)
         onChunk(`__TOOL_ERROR__${JSON.stringify({ id: tc.id, name: tc.name, error: record.error })}`)
       }
+      records.push(record)
       toolCallRecords.push(record)
-      messages.push({ role: 'assistant', content: '' })
-      messages.push({ role: 'tool', content: JSON.stringify(record.error ? { error: record.error } : record.result), tool_call_id: tc.id })
+    }
+    messages.push({
+      role: 'assistant',
+      content: null,
+      tool_calls: response.toolCalls.map(tc => ({
+        id: tc.id,
+        type: 'function' as const,
+        function: { name: tc.name, arguments: JSON.stringify(tc.arguments) }
+      })),
+      reasoning_content: response.reasoningContent
+    })
+    for (const record of records) {
+      messages.push({
+        role: 'tool',
+        content: JSON.stringify(record.error ? { error: record.error } : record.result),
+        tool_call_id: record.id
+      })
     }
   }
 
