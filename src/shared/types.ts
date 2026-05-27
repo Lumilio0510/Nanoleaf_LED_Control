@@ -43,6 +43,13 @@ export const IPC = {
   AGENT_ON_STREAM_CHUNK: 'agent:onStreamChunk',
   AGENT_ON_TOOL_STATUS: 'agent:onToolStatus',
 
+  // Canvas 画板
+  DESIGN_LIST: 'design:list',
+  DESIGN_LOAD: 'design:load',
+  DESIGN_SAVE: 'design:save',
+  DESIGN_DELETE: 'design:delete',
+  DESIGN_EXPORT: 'design:export',
+
   // 聊天历史
   CHAT_SESSION_LIST: 'chat:sessionList',
   CHAT_SESSION_GET: 'chat:sessionGet',
