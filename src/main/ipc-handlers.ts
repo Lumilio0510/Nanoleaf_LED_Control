@@ -3,9 +3,11 @@ const { ipcMain, BrowserWindow } = electron
 import { IPC } from '../shared/types'
 import * as deviceService from './device.service'
 import * as nanoleafApi from './nanoleaf-api.service'
+import { normalizeEffectDef } from './nanoleaf-api.service'
 import * as skillService from './skill.service'
 import { executeSkill } from './skill-executor'
 import * as agentService from './agent.service'
+import * as designService from './design.service'
 import { readJSON, writeJSON } from './storage'
 import { rgbToHsb } from './color-converter'
 import type { LLMConfig } from '../shared/types'
@@ -102,7 +104,8 @@ export function registerHandlers() {
   })
 
   ipcMain.handle(IPC.CONTROL_WRITE_EFFECT, async (_event, effectDef: Record<string, unknown>) => {
-    await nanoleafApi.sendRequest('PUT', '/effects', { write: effectDef })
+    const normalized = normalizeEffectDef(effectDef)
+    await nanoleafApi.sendRequest('PUT', '/effects', { write: normalized })
   })
 
   ipcMain.handle(IPC.CONTROL_EFFECT_LIST, async () => {
@@ -207,5 +210,28 @@ export function registerHandlers() {
 
   ipcMain.handle(IPC.SETTINGS_SAVE_LLM, async (_event, config: LLMConfig) => {
     writeJSON('llm.json', config)
+  })
+
+  // ======== Canvas 画板 ========
+  ipcMain.handle(IPC.DESIGN_LIST, async () => designService.listDesigns())
+
+  ipcMain.handle(IPC.DESIGN_LOAD, async (_event, id: string) => designService.loadDesign(id))
+
+  ipcMain.handle(IPC.DESIGN_SAVE, async (_event, design) => designService.saveDesign(design))
+
+  ipcMain.handle(IPC.DESIGN_DELETE, async (_event, id: string) => designService.deleteDesign(id))
+
+  ipcMain.handle(IPC.DESIGN_EXPORT, async (_event, dataUrl: string) => {
+    const { dialog } = require('electron')
+    const { writeFileSync } = require('fs')
+    const result = await dialog.showSaveDialog({
+      filters: [{ name: 'PNG Image', extensions: ['png'] }],
+      defaultPath: 'canvas-design.png',
+    })
+    if (!result.canceled && result.filePath) {
+      writeFileSync(result.filePath, Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ''), 'base64'))
+      return result.filePath
+    }
+    return null
   })
 }
