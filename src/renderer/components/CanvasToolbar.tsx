@@ -1,0 +1,35 @@
+import Paper from '@mui/material/Paper'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
+import ToggleButton from '@mui/material/ToggleButton'
+import IconButton from '@mui/material/IconButton'
+import Tooltip from '@mui/material/Tooltip'
+import DeleteIcon from '@mui/icons-material/Delete'
+import UndoIcon from '@mui/icons-material/Undo'
+import ImageIcon from '@mui/icons-material/Image'
+import NearMeIcon from '@mui/icons-material/NearMe'
+
+type ToolMode = 'select' | 'hexagon' | 'triangle' | 'mini-triangle'
+
+interface Props {
+  toolMode: ToolMode
+  onToolChange: (m: ToolMode) => void
+  onDelete: () => void
+  onUndo: () => void
+  onExport: () => void
+}
+
+export default function CanvasToolbar({ toolMode, onToolChange, onDelete, onUndo, onExport }: Props) {
+  return (
+    <Paper elevation={1} sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1, borderBottom: 1, borderColor: 'divider' }}>
+      <ToggleButtonGroup value={toolMode} exclusive onChange={(_, v) => v && onToolChange(v)} size="small">
+        <ToggleButton value="select"><NearMeIcon fontSize="small" /></ToggleButton>
+        <ToggleButton value="hexagon">⬡</ToggleButton>
+        <ToggleButton value="triangle">△</ToggleButton>
+        <ToggleButton value="mini-triangle">▽</ToggleButton>
+      </ToggleButtonGroup>
+      <Tooltip title="删除选中 (Delete)"><IconButton size="small" onClick={onDelete}><DeleteIcon fontSize="small" /></IconButton></Tooltip>
+      <Tooltip title="撤销 (Ctrl+Z)"><IconButton size="small" onClick={onUndo}><UndoIcon fontSize="small" /></IconButton></Tooltip>
+      <Tooltip title="导出图片"><IconButton size="small" onClick={onExport}><ImageIcon fontSize="small" /></IconButton></Tooltip>
+    </Paper>
+  )
+}
