@@ -9,14 +9,16 @@ import CircleIcon from '@mui/icons-material/Circle'
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'
 import SmartToyIcon from '@mui/icons-material/SmartToy'
 import SettingsIcon from '@mui/icons-material/Settings'
+import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize'
 
-type Page = 'control' | 'skills' | 'agent' | 'settings'
+type Page = 'control' | 'skills' | 'agent' | 'settings' | 'canvas'
 
 const items: { key: Page; label: string; icon: React.ReactNode }[] = [
   { key: 'control', label: '控制面板', icon: <CircleIcon sx={{ fontSize: 16 }} /> },
   { key: 'skills', label: 'Skill 库', icon: <AutoAwesomeIcon sx={{ fontSize: 16 }} /> },
   { key: 'agent', label: 'AI 助手', icon: <SmartToyIcon sx={{ fontSize: 16 }} /> },
   { key: 'settings', label: '设置', icon: <SettingsIcon sx={{ fontSize: 16 }} /> },
+  { key: 'canvas', label: '画板', icon: <DashboardCustomizeIcon sx={{ fontSize: 16 }} /> },
 ]
 
 export default function Sidebar({ current, onNavigate }: { current: Page; onNavigate: (p: Page) => void }) {
