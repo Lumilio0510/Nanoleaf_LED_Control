@@ -70,6 +70,13 @@ const api = {
   createSession: (): Promise<ChatSession> => ipcRenderer.invoke(IPC.CHAT_SESSION_CREATE),
   deleteSession: (id: string): Promise<void> => ipcRenderer.invoke(IPC.CHAT_SESSION_DELETE, id),
 
+  // ======== Canvas 画板 ========
+  listDesigns: (): Promise<unknown[]> => ipcRenderer.invoke(IPC.DESIGN_LIST),
+  loadDesign: (id: string): Promise<unknown> => ipcRenderer.invoke(IPC.DESIGN_LOAD, id),
+  saveDesign: (design: unknown): Promise<unknown> => ipcRenderer.invoke(IPC.DESIGN_SAVE, design),
+  deleteDesign: (id: string): Promise<void> => ipcRenderer.invoke(IPC.DESIGN_DELETE, id),
+  exportDesignImage: (dataUrl: string): Promise<string | null> => ipcRenderer.invoke(IPC.DESIGN_EXPORT, dataUrl),
+
   // ======== 设置 ========
   getSettings: (): Promise<Record<string, unknown>> => ipcRenderer.invoke(IPC.SETTINGS_GET),
   saveSettings: (settings: Record<string, unknown>): Promise<void> => ipcRenderer.invoke(IPC.SETTINGS_SAVE, settings),

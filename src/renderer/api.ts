@@ -1,4 +1,5 @@
 import type { DeviceConfig, DeviceState, DiscoveredDevice, EffectInfo, EffectDetail, Skill, ChatSession, ChatMessage, QuickCommand, LLMConfig, ToolCallRecord } from './types'
+import type { CanvasDesign } from '../shared/canvas-types'
 
 declare global {
   interface Window {
@@ -44,6 +45,12 @@ declare global {
       saveSettings: (settings: Record<string, unknown>) => Promise<void>
       getLlmConfig: () => Promise<LLMConfig>
       saveLlmConfig: (config: LLMConfig) => Promise<void>
+      // Canvas
+      listDesigns: () => Promise<Array<{ id: string; name: string; updatedAt: string }>>
+      loadDesign: (id: string) => Promise<CanvasDesign | null>
+      saveDesign: (design: CanvasDesign) => Promise<{ id: string; name: string; updatedAt: string }>
+      deleteDesign: (id: string) => Promise<void>
+      exportDesignImage: (dataUrl: string) => Promise<string | null>
     }
   }
 }
@@ -90,4 +97,9 @@ export const api = {
   saveSettings: (settings: Record<string, unknown>) => window.electronAPI.saveSettings(settings),
   getLlmConfig: () => window.electronAPI.getLlmConfig(),
   saveLlmConfig: (config: LLMConfig) => window.electronAPI.saveLlmConfig(config),
+  listDesigns: () => window.electronAPI.listDesigns(),
+  loadDesign: (id: string) => window.electronAPI.loadDesign(id),
+  saveDesign: (design: CanvasDesign) => window.electronAPI.saveDesign(design),
+  deleteDesign: (id: string) => window.electronAPI.deleteDesign(id),
+  exportDesignImage: (dataUrl: string) => window.electronAPI.exportDesignImage(dataUrl),
 }
