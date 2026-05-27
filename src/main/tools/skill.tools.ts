@@ -1,36 +1,10 @@
 import * as nanoleafApi from '../nanoleaf-api.service'
+import { normalizeEffectDef } from '../nanoleaf-api.service'
 import * as skillService from '../skill.service'
 import { randomUUID } from 'crypto'
 import type { ToolDef } from '../llm/types'
 
 type ToolExecutor = (args: Record<string, unknown>) => Promise<unknown>
-
-// 规范化 LLM 生成的不规范字段名，如 Palette → palette
-function normalizeEffectDef(def: Record<string, unknown>): Record<string, unknown> {
-  const normalized = { ...def }
-
-  // 修复常见的字段名大小写问题：Palette → palette
-  if ('Palette' in normalized && !('palette' in normalized)) {
-    normalized.palette = normalized.Palette
-    delete normalized.Palette
-  }
-  if ('Palette' in normalized && 'palette' in normalized) {
-    delete normalized.Palette
-  }
-
-  // 规范化 palette 数组元素的字段名
-  if (Array.isArray(normalized.palette)) {
-    normalized.palette = (normalized.palette as Record<string, unknown>[]).map(c => {
-      const entry: Record<string, unknown> = {}
-      for (const [k, v] of Object.entries(c)) {
-        entry[k.toLowerCase()] = v
-      }
-      return entry
-    })
-  }
-
-  return normalized
-}
 
 const PLUGIN_UUIDS: Record<string, string> = {
   flow: '027842e4-e1d6-4a4c-a731-be74a1ebd4cf',

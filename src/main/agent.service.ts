@@ -68,7 +68,7 @@ ${deviceContext}
 - 选择最匹配的 pluginUuid（flow=流动渐变, wheel=旋转渐变, explode=爆炸扩散, fade=同步渐变, random=随机变化, highlight=高亮）
 - palette（注意全小写）指定 2-6 个 HSB 颜色（hue:0-360, saturation:0-100, brightness:0-100）
 - pluginOptions 设置合理参数值（transTime: 过渡时间 1-600 单位0.1秒, loop: 是否循环, linDirection: 方向等）
-- animName 用中文描述性名称
+- animName 只用英文字母、数字、空格、下划线（Nanoleaf 不支持中文等非 ASCII 字符！）
 - 版本字段 version 固定为 "2.0"
 - colorType 固定为 "HSB"
 

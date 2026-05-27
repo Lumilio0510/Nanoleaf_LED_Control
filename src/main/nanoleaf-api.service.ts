@@ -140,6 +140,41 @@ export async function identify(): Promise<void> {
   if (!res.ok) throw new Error(`设备识别失败: HTTP ${res.status}`)
 }
 
+// 规范化 LLM 生成的不规范字段名，如 Palette → palette
+function normalizeEffectDef(def: Record<string, unknown>): Record<string, unknown> {
+  const normalized = { ...def }
+
+  // 修复常见的字段名大小写问题：Palette → palette
+  if ('Palette' in normalized && !('palette' in normalized)) {
+    normalized.palette = normalized.Palette
+    delete normalized.Palette
+  }
+  if ('Palette' in normalized && 'palette' in normalized) {
+    delete normalized.Palette
+  }
+
+  // 规范化 palette 数组元素的字段名
+  if (Array.isArray(normalized.palette)) {
+    normalized.palette = (normalized.palette as Record<string, unknown>[]).map(c => {
+      const entry: Record<string, unknown> = {}
+      for (const [k, v] of Object.entries(c)) {
+        entry[k.toLowerCase()] = v
+      }
+      return entry
+    })
+  }
+
+  // animName 去除非 ASCII 字符（Nanoleaf 不支持中文）
+  if (typeof normalized.animName === 'string') {
+    normalized.animName = normalized.animName.replace(/[^\x20-\x7E]/g, '').trim()
+    if (!normalized.animName) {
+      normalized.animName = 'AI_Effect'
+    }
+  }
+
+  return normalized
+}
+
 export async function sendRequest(method: string, path: string, body?: Record<string, unknown>): Promise<unknown> {
   const url = `${baseUrl()}${getBasePath()}${path}`
   const res = await request(method, url, body)
@@ -147,8 +182,16 @@ export async function sendRequest(method: string, path: string, body?: Record<st
     if (res.status === 401) {
       throw new Error('认证已过期，请重新认证设备')
     }
-    throw new Error(`API 请求失败: HTTP ${res.status} ${method} ${path}`)
+    // 尝试读取响应体以获得详细错误信息
+    let detail = ''
+    try {
+      const text = await res.text()
+      if (text) detail = ` · ${text.slice(0, 200)}`
+    } catch { /* ignore */ }
+    throw new Error(`API 请求失败: HTTP ${res.status} ${method} ${path}${detail}`)
   }
   const text = await res.text()
   try { return JSON.parse(text) } catch { return text }
 }
+
+export { normalizeEffectDef }
