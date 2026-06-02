@@ -48,7 +48,9 @@ export const IPC = {
   DESIGN_LOAD: 'design:load',
   DESIGN_SAVE: 'design:save',
   DESIGN_DELETE: 'design:delete',
+  DESIGN_RENAME: 'design:rename',
   DESIGN_EXPORT: 'design:export',
+  DESIGN_AI_GENERATE: 'design:aiGenerate',
 
   // 聊天历史
   CHAT_SESSION_LIST: 'chat:sessionList',
