@@ -1,8 +1,6 @@
 import type { PlacedPanel } from '../../shared/canvas-types'
 import type { PanelNode } from './types'
 
-const CONNECTION_THRESHOLD = 20
-
 export class PanelGraph {
   private _nodes: Map<string, PanelNode> = new Map()
 
