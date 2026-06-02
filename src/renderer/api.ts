@@ -51,6 +51,8 @@ declare global {
       saveDesign: (design: CanvasDesign) => Promise<{ id: string; name: string; updatedAt: string }>
       deleteDesign: (id: string) => Promise<void>
       exportDesignImage: (dataUrl: string) => Promise<string | null>
+      renameDesign: (id: string, newName: string) => Promise<{ id: string; name: string; updatedAt: string }>
+      aiGeneratePanels: (description: string) => Promise<{ panels: Array<{ type: string; x: number; y: number; rotation: number; color: string }> }>
     }
   }
 }
@@ -102,4 +104,6 @@ export const api = {
   saveDesign: (design: CanvasDesign) => window.electronAPI.saveDesign(design),
   deleteDesign: (id: string) => window.electronAPI.deleteDesign(id),
   exportDesignImage: (dataUrl: string) => window.electronAPI.exportDesignImage(dataUrl),
+  renameDesign: (id: string, newName: string) => window.electronAPI.renameDesign(id, newName),
+  aiGeneratePanels: (description: string) => window.electronAPI.aiGeneratePanels(description),
 }

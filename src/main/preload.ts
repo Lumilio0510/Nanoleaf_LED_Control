@@ -75,6 +75,9 @@ const api = {
   loadDesign: (id: string): Promise<unknown> => ipcRenderer.invoke(IPC.DESIGN_LOAD, id),
   saveDesign: (design: unknown): Promise<unknown> => ipcRenderer.invoke(IPC.DESIGN_SAVE, design),
   deleteDesign: (id: string): Promise<void> => ipcRenderer.invoke(IPC.DESIGN_DELETE, id),
+  renameDesign: (id: string, newName: string): Promise<{ id: string; name: string; updatedAt: string }> => ipcRenderer.invoke(IPC.DESIGN_RENAME, id, newName),
+  aiGeneratePanels: (description: string): Promise<{ panels: Array<{ type: string; x: number; y: number; rotation: number; color: string }> }> =>
+    ipcRenderer.invoke(IPC.DESIGN_AI_GENERATE, description),
   exportDesignImage: (dataUrl: string): Promise<string | null> => ipcRenderer.invoke(IPC.DESIGN_EXPORT, dataUrl),
 
   // ======== 设置 ========
