@@ -8,7 +8,7 @@ import UndoIcon from '@mui/icons-material/Undo'
 import ImageIcon from '@mui/icons-material/Image'
 import NearMeIcon from '@mui/icons-material/NearMe'
 import EditIcon from '@mui/icons-material/Edit'
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline'
+import PlayCircleIcon from '@mui/icons-material/PlayCircle'
 
 type ToolMode = 'select' | 'hexagon' | 'triangle' | 'mini-triangle'
 type CanvasMode = 'edit' | 'sim'
@@ -31,7 +31,7 @@ export default function CanvasToolbar({
     <Paper elevation={1} sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1, borderBottom: 1, borderColor: 'divider' }}>
       <ToggleButtonGroup value={canvasMode} exclusive onChange={(_, v) => v && onCanvasModeChange(v)} size="small">
         <ToggleButton value="edit"><Tooltip title="编辑模式"><EditIcon fontSize="small" /></Tooltip></ToggleButton>
-        <ToggleButton value="sim"><Tooltip title="仿真模式"><PlayCircleOutlineIcon fontSize="small" /></Tooltip></ToggleButton>
+        <ToggleButton value="sim"><Tooltip title="仿真模式"><PlayCircleIcon fontSize="small" /></Tooltip></ToggleButton>
       </ToggleButtonGroup>
 
       <Paper elevation={0} sx={{ width: 1, height: 24, bgcolor: 'divider', mx: 0.5 }} />
