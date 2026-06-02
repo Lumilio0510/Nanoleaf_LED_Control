@@ -114,15 +114,6 @@ export default function CanvasPage() {
       snappedTo: null,
     }))
 
-    // Overlap check
-    for (let i = 0; i < newPanels.length; i++) {
-      for (let j = i + 1; j < newPanels.length; j++) {
-        if (panelsOverlap(newPanels[i], newPanels[j])) {
-          throw new Error(`AI 生成的第 ${i + 1} 和第 ${j + 1} 块灯板重叠，请重试`)
-        }
-      }
-    }
-
     replaceAllPanels(newPanels)
     await api.saveDesign({
       id: design?.id ?? crypto.randomUUID(),
