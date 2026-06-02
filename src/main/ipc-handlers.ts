@@ -8,6 +8,7 @@ import * as skillService from './skill.service'
 import { executeSkill } from './skill-executor'
 import * as agentService from './agent.service'
 import * as designService from './design.service'
+import * as canvasAgentService from './canvas-agent.service'
 import { readJSON, writeJSON } from './storage'
 import { rgbToHsb } from './color-converter'
 import type { LLMConfig } from '../shared/types'
@@ -221,6 +222,8 @@ export function registerHandlers() {
 
   ipcMain.handle(IPC.DESIGN_DELETE, async (_event, id: string) => designService.deleteDesign(id))
 
+  ipcMain.handle(IPC.DESIGN_RENAME, async (_event, id: string, newName: string) => designService.renameDesign(id, newName))
+
   ipcMain.handle(IPC.DESIGN_EXPORT, async (_event, dataUrl: string) => {
     const { dialog } = require('electron')
     const { writeFileSync } = require('fs')
@@ -233,5 +236,9 @@ export function registerHandlers() {
       return result.filePath
     }
     return null
+  })
+
+  ipcMain.handle(IPC.DESIGN_AI_GENERATE, async (_event, description: string) => {
+    return canvasAgentService.generatePanels(description)
   })
 }
