@@ -1,17 +1,18 @@
 import type { HsbColor, RgbColor } from './types'
 
 export function hsbToRgb(h: number, s: number, b: number): RgbColor {
+  const hNormalized = ((h % 360) + 360) % 360
   const sn = s / 100
   const bn = b / 100
   const c = bn * sn
-  const x = c * (1 - Math.abs(((h / 60) % 2) - 1))
+  const x = c * (1 - Math.abs(((hNormalized / 60) % 2) - 1))
   const m = bn - c
   let rn = 0, gn = 0, bn2 = 0
-  if (h < 60) { rn = c; gn = x }
-  else if (h < 120) { rn = x; gn = c }
-  else if (h < 180) { gn = c; bn2 = x }
-  else if (h < 240) { gn = x; bn2 = c }
-  else if (h < 300) { rn = x; bn2 = c }
+  if (hNormalized < 60) { rn = c; gn = x }
+  else if (hNormalized < 120) { rn = x; gn = c }
+  else if (hNormalized < 180) { gn = c; bn2 = x }
+  else if (hNormalized < 240) { gn = x; bn2 = c }
+  else if (hNormalized < 300) { rn = x; bn2 = c }
   else { rn = c; bn2 = x }
   return {
     r: Math.round((rn + m) * 255),
@@ -41,7 +42,7 @@ export function paletteIndex(palette: HsbColor[], t: number): RgbColor {
   if (palette.length === 0) return { r: 0, g: 0, b: 0 }
   if (palette.length === 1) return hsbToRgb(palette[0].hue, palette[0].saturation, palette[0].brightness)
   const total = palette.length
-  const idx = ((t % 1) + 1) % 1 * total
+  const idx = (t - Math.floor(t)) * total
   const i0 = Math.floor(idx) % total
   const i1 = (i0 + 1) % total
   const frac = idx - Math.floor(idx)
