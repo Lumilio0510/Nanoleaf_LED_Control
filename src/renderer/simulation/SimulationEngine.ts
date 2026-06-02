@@ -37,7 +37,7 @@ export class SimulationEngine {
   ): void {
     this.stop()
 
-    const write = (bodyTemplate as Record<string, unknown>)?.write as SkillBodyWrite | undefined
+    const write = bodyTemplate?.write as SkillBodyWrite | undefined
     const effectDef = write ?? bodyTemplate
     const pluginUuid = effectDef.pluginUuid ?? ''
     const engineName = PLUGIN_ENGINE_MAP[pluginUuid]
@@ -54,7 +54,7 @@ export class SimulationEngine {
     const options = effectDef.pluginOptions ?? {}
 
     // Dynamic import of engine
-    this.loadEngine(engineName || 'fade').then(EngineClass => {
+    this.loadEngine(engineName ?? 'fade').then(EngineClass => {
       this.engine = new EngineClass()
       this.engine.init(palette, options)
 
@@ -71,6 +71,8 @@ export class SimulationEngine {
         this.rafId = requestAnimationFrame(tick)
       }
       this.rafId = requestAnimationFrame(tick)
+    }).catch(err => {
+      console.error('[Simulation] Failed to load engine:', err)
     })
   }
 
