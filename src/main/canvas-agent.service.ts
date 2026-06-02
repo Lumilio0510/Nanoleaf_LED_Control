@@ -2,9 +2,10 @@ import { readJSON } from './storage'
 import type { PanelType } from '../shared/canvas-types'
 import type { LLMConfig } from '../shared/types'
 import { getAdapter, type ChatMessage } from './llm'
+import { listDesigns, loadDesign } from './design.service'
 
-const SYSTEM_PROMPT = `你是 Nanoleaf Shape 灯板布局设计师。
-根据用户的描述，用三种灯板拼出大致形状。
+const BASE_PROMPT = `你是 Nanoleaf Shape 灯板布局设计师。
+根据用户的描述，用三种灯板拼出大致形状。参考已有方案中的坐标和排列方式。
 
 ## 可用灯板
 
@@ -57,10 +58,41 @@ const SYSTEM_PROMPT = `你是 Nanoleaf Shape 灯板布局设计师。
 
 const VALID_TYPES: PanelType[] = ['hexagon', 'triangle', 'mini-triangle']
 const MAX_PANELS = 50
+const MAX_EXAMPLES = 8
+
+function buildSystemPrompt(): string {
+  const all = listDesigns()
+  const named = all.filter(d => d.name !== 'New Design')
+
+  if (named.length === 0) return BASE_PROMPT
+
+  const examples = named.slice(0, MAX_EXAMPLES)
+  const exampleTexts: string[] = []
+
+  for (const meta of examples) {
+    const design = loadDesign(meta.id)
+    if (!design || design.panels.length === 0) continue
+
+    const compact = design.panels.map(p => ({
+      type: p.type,
+      x: Math.round(p.x),
+      y: Math.round(p.y),
+      rotation: p.rotation,
+      color: p.color,
+    }))
+
+    exampleTexts.push(`## 示例: "${meta.name}" (${compact.length}块板)
+${JSON.stringify(compact, null, 2)}`)
+  }
+
+  if (exampleTexts.length === 0) return BASE_PROMPT
+
+  return BASE_PROMPT + '\n\n## 参考方案（从中学习坐标和排列模式）\n\n' + exampleTexts.join('\n\n')
+}
 
 function buildMessages(description: string): ChatMessage[] {
   return [
-    { role: 'system', content: SYSTEM_PROMPT },
+    { role: 'system', content: buildSystemPrompt() },
     { role: 'user', content: description },
   ]
 }
