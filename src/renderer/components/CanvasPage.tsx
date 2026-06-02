@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useCallback, useRef, useState } from 'react'
 import Box from '@mui/material/Box'
 import List from '@mui/material/List'
 import ListItemButton from '@mui/material/ListItemButton'
@@ -6,21 +6,31 @@ import ListItemText from '@mui/material/ListItemText'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 import Paper from '@mui/material/Paper'
+import TextField from '@mui/material/TextField'
 import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
 import type Konva from 'konva'
 import CanvasToolbar from './CanvasToolbar'
 import CanvasStage from './CanvasStage'
 import ColorPanel from './ColorPanel'
+import CanvasAIDialog from './CanvasAIDialog'
 import { useCanvasDesign } from '../hooks/useCanvasDesign'
+import { panelsOverlap, findBestSnap } from '../utils/panelGeometry'
+import type { SnappedTo, PlacedPanel, PanelType } from '../../shared/canvas-types'
 import { api } from '../api'
+
+const SNAP_THRESHOLD = 20
 
 export default function CanvasPage() {
   const stageRef = useRef<Konva.Stage | null>(null)
+  const dragOrigins = useRef<Map<string, { x: number; y: number }>>(new Map())
+  const [renamingId, setRenamingId] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+  const [aiDialogOpen, setAiDialogOpen] = useState(false)
   const {
     design, designs, toolMode, selectedIds, setToolMode, setSelectedIds,
-    refreshDesigns, newDesign, loadDesign, saveDesign, deleteDesign,
-    addPanel, movePanelEnd, updatePanelColor, deleteSelected, selectAll, undo,
+    refreshDesigns, newDesign, loadDesign, saveDesign, deleteDesign, renameDesign,
+    addPanel, movePanelEnd, batchUpdatePanels, updatePanelColor, deleteSelected, rotatePanel, selectAll, undo, replaceAllPanels,
   } = useCanvasDesign()
 
   useEffect(() => { refreshDesigns() }, [refreshDesigns])
@@ -49,8 +59,9 @@ export default function CanvasPage() {
   const handleStageClick = useCallback((x: number, y: number) => {
     if (toolMode !== 'select') {
       addPanel(toolMode as 'hexagon' | 'triangle' | 'mini-triangle', x, y)
+      setToolMode('select')
     }
-  }, [toolMode, addPanel])
+  }, [toolMode, addPanel, setToolMode])
 
   const handlePanelClick = useCallback((id: string, shiftKey: boolean) => {
     setSelectedIds(prev => {
@@ -68,9 +79,64 @@ export default function CanvasPage() {
     await api.exportDesignImage(dataUrl)
   }, [])
 
+  const handlePanelRotate = useCallback((id: string) => {
+    rotatePanel(id, 30)
+  }, [rotatePanel])
+
+  const startRename = useCallback((d: { id: string; name: string }) => {
+    setRenamingId(d.id)
+    setEditName(d.name)
+  }, [])
+
+  const confirmRename = useCallback(() => {
+    if (!renamingId) return
+    const trimmed = editName.trim()
+    const id = renamingId
+    setRenamingId(null)
+    setEditName('')
+    if (trimmed) renameDesign(id, trimmed)
+  }, [renamingId, editName, renameDesign])
+
+  const cancelRename = useCallback(() => {
+    setRenamingId(null)
+    setEditName('')
+  }, [])
+
+  const handleAIGenerate = useCallback(async (description: string) => {
+    const result = await api.aiGeneratePanels(description)
+    const newPanels: PlacedPanel[] = result.panels.map(p => ({
+      id: crypto.randomUUID(),
+      type: p.type as PanelType,
+      x: p.x,
+      y: p.y,
+      rotation: p.rotation,
+      color: p.color,
+      snappedTo: null,
+    }))
+
+    // Overlap check
+    for (let i = 0; i < newPanels.length; i++) {
+      for (let j = i + 1; j < newPanels.length; j++) {
+        if (panelsOverlap(newPanels[i], newPanels[j])) {
+          throw new Error(`AI 生成的第 ${i + 1} 和第 ${j + 1} 块灯板重叠，请重试`)
+        }
+      }
+    }
+
+    replaceAllPanels(newPanels)
+    await api.saveDesign({
+      id: design?.id ?? crypto.randomUUID(),
+      name: design?.name ?? 'AI Generated',
+      panels: newPanels,
+      createdAt: design?.createdAt ?? new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
+    await refreshDesigns()
+  }, [design, replaceAllPanels, refreshDesigns])
+
   const selectedColor = design && selectedIds.size > 0
-    ? design.panels.find(p => selectedIds.has(p.id))?.color ?? '#ffffff'
-    : '#ffffff'
+    ? design.panels.find(p => selectedIds.has(p.id))?.color ?? '#cccccc'
+    : '#cccccc'
 
   return (
     <Box sx={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
@@ -83,7 +149,27 @@ export default function CanvasPage() {
         <List dense sx={{ flex: 1, overflow: 'auto' }}>
           {designs.map(d => (
             <ListItemButton key={d.id} selected={design?.id === d.id} onClick={() => loadDesign(d.id)} sx={{ gap: 1 }}>
-              <ListItemText primary={d.name} primaryTypographyProps={{ variant: 'body2', noWrap: true }} />
+              {renamingId === d.id ? (
+                <TextField
+                  variant="standard"
+                  size="small"
+                  value={editName}
+                  autoFocus
+                  fullWidth
+                  sx={{ my: -0.5 }}
+                  onKeyDown={e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); confirmRename() } else if (e.key === 'Escape') cancelRename() }}
+                  onChange={e => setEditName(e.target.value)}
+                  onBlur={confirmRename}
+                  onClick={e => e.stopPropagation()}
+                />
+              ) : (
+                <ListItemText
+                  primary={d.name}
+                  slotProps={{ primary: { variant: 'body2', noWrap: true } }}
+                  onDoubleClick={e => { e.stopPropagation(); startRename(d) }}
+                  sx={{ cursor: 'text' }}
+                />
+              )}
               <IconButton size="small" onClick={e => { e.stopPropagation(); deleteDesign(d.id) }}><DeleteIcon fontSize="small" /></IconButton>
             </ListItemButton>
           ))}
@@ -98,6 +184,7 @@ export default function CanvasPage() {
           onDelete={deleteSelected}
           onUndo={undo}
           onExport={handleExport}
+          onGenerateAI={() => setAiDialogOpen(true)}
         />
         <Box sx={{ flex: 1, position: 'relative' }}>
           <CanvasStage
@@ -107,8 +194,80 @@ export default function CanvasPage() {
             ghostColor={selectedColor}
             stageRef={stageRef}
             onPanelClick={handlePanelClick}
-            onPanelDragStart={() => {}}
-            onPanelDragEnd={(id, x, y) => movePanelEnd(id, x, y)}
+            onPanelRotate={handlePanelRotate}
+            onPanelDragStart={(id) => {
+              if (design) {
+                const p = design.panels.find(pp => pp.id === id)
+                if (p) dragOrigins.current.set(id, { x: p.x, y: p.y })
+              }
+            }}
+            onPanelDragEnd={(id, x, y) => {
+              if (!design) return null
+              const panel = design.panels.find(p => p.id === id)
+              if (!panel) return null
+
+              const trySnap = findBestSnap(
+                { type: panel.type, x, y, rotation: panel.rotation },
+                design.panels,
+                new Set([id]),
+                SNAP_THRESHOLD,
+              )
+
+              if (trySnap) {
+                const snappedCheck = { ...panel, x: trySnap.snapX, y: trySnap.snapY }
+                const overlapsOther = design.panels.some(
+                  p => p.id !== id && panelsOverlap(p, snappedCheck),
+                )
+                if (!overlapsOther) {
+                  const newSnappedTo: SnappedTo = {
+                    panelId: trySnap.targetPanelId,
+                    connectionIndex: trySnap.targetConnectionIndex,
+                  }
+                  const snappedUpdates: Record<string, SnappedTo | null> = { [id]: newSnappedTo }
+                  for (const p of design.panels) {
+                    if (p.id !== id && p.snappedTo?.panelId === id) {
+                      snappedUpdates[p.id] = null
+                    }
+                  }
+                  batchUpdatePanels(panels =>
+                    panels.map(p => {
+                      const su = snappedUpdates[p.id]
+                      return su !== undefined
+                        ? { ...p, x: p.id === id ? trySnap.snapX : p.x, y: p.id === id ? trySnap.snapY : p.y, snappedTo: su }
+                        : p.id === id
+                          ? { ...p, x: trySnap.snapX, y: trySnap.snapY }
+                          : p
+                    }),
+                  )
+                  return { x: trySnap.snapX, y: trySnap.snapY }
+                }
+              }
+
+              // No snap — standard overlap check
+              const moved = { ...panel, x, y }
+              if (!design.panels.some(p => p.id !== id && panelsOverlap(p, moved))) {
+                const snappedUpdates: Record<string, SnappedTo | null> = {}
+                if (panel.snappedTo) snappedUpdates[id] = null
+                for (const p of design.panels) {
+                  if (p.id !== id && p.snappedTo?.panelId === id) {
+                    snappedUpdates[p.id] = null
+                  }
+                }
+                if (Object.keys(snappedUpdates).length > 0) {
+                  batchUpdatePanels(panels =>
+                    panels.map(p => {
+                      const su = snappedUpdates[p.id]
+                      return su !== undefined ? { ...p, snappedTo: su } : p
+                    }),
+                  )
+                } else {
+                  movePanelEnd(id, x, y)
+                }
+                return { x, y }
+              }
+
+              return null
+            }}
             onStageClick={handleStageClick}
             onBlankClick={() => setSelectedIds(new Set())}
           />
@@ -120,6 +279,11 @@ export default function CanvasPage() {
           />
         </Box>
       </Box>
+      <CanvasAIDialog
+        open={aiDialogOpen}
+        onClose={() => setAiDialogOpen(false)}
+        onGenerate={handleAIGenerate}
+      />
     </Box>
   )
 }
