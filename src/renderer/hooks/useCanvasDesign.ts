@@ -1,10 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { v4 as uuid } from 'uuid'
 import { api } from '../api'
+import { panelsOverlap } from '../utils/panelGeometry'
 import type { PanelType, PlacedPanel, CanvasDesign, CanvasDesignMeta } from '../../shared/canvas-types'
 
 export function useCanvasDesign() {
-  const [design, setDesign] = useState<CanvasDesign | null>(null)
+  const createDefaultDesign = (): CanvasDesign => {
+    const now = new Date().toISOString()
+    return { id: crypto.randomUUID(), name: 'New Design', panels: [], createdAt: now, updatedAt: now }
+  }
+  const [design, setDesign] = useState<CanvasDesign | null>(createDefaultDesign)
   const [designs, setDesigns] = useState<CanvasDesignMeta[]>([])
   const [toolMode, setToolMode] = useState<'select' | PanelType>('select')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -25,14 +29,7 @@ export function useCanvasDesign() {
   useEffect(() => { refreshDesigns() }, [refreshDesigns])
 
   const newDesign = useCallback(() => {
-    const now = new Date().toISOString()
-    const d: CanvasDesign = {
-      id: uuid(),
-      name: 'New Design',
-      panels: [],
-      createdAt: now,
-      updatedAt: now,
-    }
+    const d = createDefaultDesign()
     setDesign(d)
     undoStack.current = []
     redoStack.current = []
@@ -64,21 +61,28 @@ export function useCanvasDesign() {
     }
   }, [design, refreshDesigns])
 
+  const renameDesign = useCallback(async (id: string, newName: string) => {
+    await api.renameDesign(id, newName)
+    await refreshDesigns()
+    setDesign(prev => prev?.id === id && prev ? { ...prev, name: newName } : prev)
+  }, [refreshDesigns])
+
   const addPanel = useCallback((type: PanelType, x: number, y: number) => {
     if (!design) return
-    pushUndo()
-    const panel: PlacedPanel = {
-      id: uuid(),
+    const newPanel: PlacedPanel = {
+      id: crypto.randomUUID(),
       type,
       x,
       y,
       rotation: 0,
-      color: '#ffffff',
+      color: '#cccccc',
       snappedTo: null,
     }
+    if (design.panels.some(p => panelsOverlap(p, newPanel))) return
+    pushUndo()
     setDesign({
       ...design,
-      panels: [...design.panels, panel],
+      panels: [...design.panels, newPanel],
       updatedAt: new Date().toISOString(),
     })
   }, [design, pushUndo])
@@ -97,6 +101,18 @@ export function useCanvasDesign() {
     setDesign({
       ...design,
       panels: design.panels.map(p => p.id === id ? { ...p, x, y } : p),
+    })
+  }, [design, pushUndo])
+
+  const batchUpdatePanels = useCallback((
+    updater: (panels: PlacedPanel[]) => PlacedPanel[],
+  ) => {
+    if (!design) return
+    pushUndo()
+    setDesign({
+      ...design,
+      panels: updater(design.panels),
+      updatedAt: new Date().toISOString(),
     })
   }, [design, pushUndo])
 
@@ -122,6 +138,33 @@ export function useCanvasDesign() {
     setSelectedIds(new Set())
   }, [design, selectedIds, pushUndo])
 
+  const rotatePanel = useCallback((id: string, degrees: number) => {
+    if (!design) return
+    pushUndo()
+    setDesign({
+      ...design,
+      panels: design.panels.map(p =>
+        p.id === id
+          ? { ...p, rotation: (p.rotation + degrees) % 360, snappedTo: null }
+          : p.snappedTo?.panelId === id
+            ? { ...p, snappedTo: null }
+            : p
+      ),
+      updatedAt: new Date().toISOString(),
+    })
+  }, [design, pushUndo])
+
+  const replaceAllPanels = useCallback((panels: PlacedPanel[]) => {
+    if (!design) return
+    pushUndo()
+    setDesign({
+      ...design,
+      panels,
+      updatedAt: new Date().toISOString(),
+    })
+    setSelectedIds(new Set())
+  }, [design, pushUndo])
+
   const selectAll = useCallback(() => {
     if (!design) return
     setSelectedIds(new Set(design.panels.map(p => p.id)))
@@ -141,7 +184,7 @@ export function useCanvasDesign() {
 
   return {
     design, designs, toolMode, selectedIds, setDesign, setToolMode, setSelectedIds,
-    refreshDesigns, newDesign, loadDesign, saveDesign, deleteDesign,
-    addPanel, movePanel, movePanelEnd, updatePanelColor, deleteSelected, selectAll, undo,
+    refreshDesigns, newDesign, loadDesign, saveDesign, deleteDesign, renameDesign,
+    addPanel, movePanel, movePanelEnd, batchUpdatePanels, updatePanelColor, deleteSelected, rotatePanel, selectAll, undo, replaceAllPanels,
   }
 }
