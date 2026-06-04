@@ -2,11 +2,13 @@ import { useState } from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
+import IconButton from '@mui/material/IconButton'
 import TextField from '@mui/material/TextField'
 import Grid from '@mui/material/Grid'
 import Stack from '@mui/material/Stack'
 import InputAdornment from '@mui/material/InputAdornment'
 import SearchIcon from '@mui/icons-material/Search'
+import RefreshIcon from '@mui/icons-material/Refresh'
 import AddIcon from '@mui/icons-material/Add'
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'
 import { useSkills } from '../hooks/useSkills'
@@ -15,7 +17,7 @@ import SkillEditor from './SkillEditor'
 import type { Skill } from '../types'
 
 export default function SkillLibrary() {
-  const { skills, saveSkill, deleteSkill, execute } = useSkills()
+  const { skills, refresh, saveSkill, deleteSkill, execute } = useSkills()
   const [search, setSearch] = useState('')
   const [editorOpen, setEditorOpen] = useState(false)
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null)
@@ -51,6 +53,9 @@ export default function SkillLibrary() {
             }}
             sx={{ width: 220 }}
           />
+          <IconButton onClick={refresh} title="刷新 Skill 列表">
+            <RefreshIcon />
+          </IconButton>
           <Button variant="contained" startIcon={<AddIcon />} onClick={handleNew}>
             新建
           </Button>

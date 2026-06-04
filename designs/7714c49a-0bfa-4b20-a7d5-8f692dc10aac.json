@@ -1,0 +1,188 @@
+{
+  "id": "7714c49a-0bfa-4b20-a7d5-8f692dc10aac",
+  "name": "极光之翼",
+  "panels": [
+    {
+      "id": "d6df3e81-29ee-454d-a4fa-4728e80b8b82",
+      "type": "triangle",
+      "x": 174.911408498137,
+      "y": 20.03403207333531,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": null
+    },
+    {
+      "id": "cf22e2f3-31b7-418a-80de-1df1c02f9a77",
+      "type": "triangle",
+      "x": 174.911408498137,
+      "y": 97.39896814474517,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "d6df3e81-29ee-454d-a4fa-4728e80b8b82",
+        "connectionIndex": 3
+      }
+    },
+    {
+      "id": "8babddbc-ad62-4d68-bf0f-1d1b634ec700",
+      "type": "triangle",
+      "x": 107.911408498137,
+      "y": 136.0814361804501,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "cf22e2f3-31b7-418a-80de-1df1c02f9a77",
+        "connectionIndex": 3
+      }
+    },
+    {
+      "id": "0cca89fc-e127-4d8d-b859-b20b543bf1a2",
+      "type": "triangle",
+      "x": 241.911408498137,
+      "y": 136.0814361804501,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "cf22e2f3-31b7-418a-80de-1df1c02f9a77",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "ee8d0a9a-924a-4fec-b4f3-b9ca08e0758d",
+      "type": "triangle",
+      "x": 308.911408498137,
+      "y": 97.39896814474517,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "0cca89fc-e127-4d8d-b859-b20b543bf1a2",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "1e0674b5-6cd8-407e-b135-d2a148c55f16",
+      "type": "triangle",
+      "x": 107.911408498137,
+      "y": 213.44637225185997,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "8babddbc-ad62-4d68-bf0f-1d1b634ec700",
+        "connectionIndex": 3
+      }
+    },
+    {
+      "id": "caca7bbd-9964-417d-985c-c0a12c5f6667",
+      "type": "triangle",
+      "x": 40.91140849813699,
+      "y": 252.1288402875649,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "1e0674b5-6cd8-407e-b135-d2a148c55f16",
+        "connectionIndex": 2
+      }
+    },
+    {
+      "id": "f37efc68-8e05-4ed8-aeee-eb2e57505191",
+      "type": "triangle",
+      "x": 10.577054811625374,
+      "y": 95.05056435202312,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": null
+    },
+    {
+      "id": "d295dbc4-5cdc-4764-9add-edd1e83abfc6",
+      "type": "triangle",
+      "x": 535.628778817702,
+      "y": 96.24192721127162,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": null
+    },
+    {
+      "id": "e2c4daca-6565-429e-8ab9-0e2f988a1e07",
+      "type": "triangle",
+      "x": 602.628778817702,
+      "y": 134.92439524697656,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "d295dbc4-5cdc-4764-9add-edd1e83abfc6",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "524fbd7b-2ddb-4e58-a2d6-38f7db44d55f",
+      "type": "triangle",
+      "x": 669.628778817702,
+      "y": 96.24192721127162,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "e2c4daca-6565-429e-8ab9-0e2f988a1e07",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "21d0d2bd-b4e1-4980-a223-9eaa8ec1a744",
+      "type": "triangle",
+      "x": 736.628778817702,
+      "y": 134.92439524697656,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "524fbd7b-2ddb-4e58-a2d6-38f7db44d55f",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "a3248d85-1481-4458-bd7f-62a4a2b82e3b",
+      "type": "triangle",
+      "x": 837.0733418077612,
+      "y": 91.16140086874259,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": null
+    },
+    {
+      "id": "d66098e0-bee4-4f82-a0dd-ba27de1abffd",
+      "type": "triangle",
+      "x": 669.628778817702,
+      "y": 18.876991139861765,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "524fbd7b-2ddb-4e58-a2d6-38f7db44d55f",
+        "connectionIndex": 5
+      }
+    },
+    {
+      "id": "c41d68f3-da20-4faf-a0ca-a9a7104ead97",
+      "type": "triangle",
+      "x": 736.628778817702,
+      "y": 212.2893313183864,
+      "rotation": 180,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "21d0d2bd-b4e1-4980-a223-9eaa8ec1a744",
+        "connectionIndex": 3
+      }
+    },
+    {
+      "id": "3b0e1909-0af1-4b1b-badf-c1054b5d3a9d",
+      "type": "triangle",
+      "x": 803.628778817702,
+      "y": 250.97179935409133,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "c41d68f3-da20-4faf-a0ca-a9a7104ead97",
+        "connectionIndex": 5
+      }
+    }
+  ],
+  "createdAt": "2026-06-02T01:36:56.207Z",
+  "updatedAt": "2026-06-04T03:03:13.127Z"
+}

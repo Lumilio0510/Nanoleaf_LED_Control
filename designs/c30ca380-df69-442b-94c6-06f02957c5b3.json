@@ -1,0 +1,113 @@
+{
+  "id": "c30ca380-df69-442b-94c6-06f02957c5b3",
+  "name": "和弦光阶",
+  "panels": [
+    {
+      "id": "b057858a-41f4-4aa5-9362-d263cc41e7b9",
+      "type": "triangle",
+      "x": 275.8140866257559,
+      "y": 53.257472294281456,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": null
+    },
+    {
+      "id": "5e05c747-6cc7-4757-8659-852f44a598f8",
+      "type": "triangle",
+      "x": 376.3140866257559,
+      "y": 33.916238276429,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "b057858a-41f4-4aa5-9362-d263cc41e7b9",
+        "connectionIndex": 0
+      }
+    },
+    {
+      "id": "763e6cdc-d1fb-4f5c-ada8-cff555377a88",
+      "type": "triangle",
+      "x": 476.8140866257559,
+      "y": 53.25747229428147,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "5e05c747-6cc7-4757-8659-852f44a598f8",
+        "connectionIndex": 0
+      }
+    },
+    {
+      "id": "f980cb0c-274c-4471-bac6-a477aebd1e97",
+      "type": "triangle",
+      "x": 476.8140866257559,
+      "y": -24.107463777128384,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "763e6cdc-d1fb-4f5c-ada8-cff555377a88",
+        "connectionIndex": 5
+      }
+    },
+    {
+      "id": "2b655ae4-553e-4b23-9182-4685d03acddd",
+      "type": "triangle",
+      "x": 577.314086625756,
+      "y": -4.766229759275916,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "f980cb0c-274c-4471-bac6-a477aebd1e97",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "3cca897b-8bb8-43ba-9353-f707caa68df1",
+      "type": "triangle",
+      "x": 677.814086625756,
+      "y": -24.107463777128373,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "2b655ae4-553e-4b23-9182-4685d03acddd",
+        "connectionIndex": 0
+      }
+    },
+    {
+      "id": "a0c3696a-e26c-43e6-b6ee-d8127fa0dcf4",
+      "type": "triangle",
+      "x": 677.814086625756,
+      "y": 53.257472294281484,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "3cca897b-8bb8-43ba-9353-f707caa68df1",
+        "connectionIndex": 3
+      }
+    },
+    {
+      "id": "cc5720d3-82bf-4698-a093-b2c66d3c3f2b",
+      "type": "triangle",
+      "x": 778.314086625756,
+      "y": 33.91623827642901,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "a0c3696a-e26c-43e6-b6ee-d8127fa0dcf4",
+        "connectionIndex": 0
+      }
+    },
+    {
+      "id": "665484a1-95e7-4f85-bd30-61c68d3be3be",
+      "type": "triangle",
+      "x": 878.814086625756,
+      "y": 53.257472294281484,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "cc5720d3-82bf-4698-a093-b2c66d3c3f2b",
+        "connectionIndex": 1
+      }
+    }
+  ],
+  "createdAt": "2026-06-01T08:45:54.085Z",
+  "updatedAt": "2026-06-01T08:48:31.935Z"
+}

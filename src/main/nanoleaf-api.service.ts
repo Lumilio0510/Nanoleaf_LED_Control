@@ -182,13 +182,13 @@ export async function sendRequest(method: string, path: string, body?: Record<st
     if (res.status === 401) {
       throw new Error('认证已过期，请重新认证设备')
     }
-    // 尝试读取响应体以获得详细错误信息
     let detail = ''
     try {
       const text = await res.text()
-      if (text) detail = ` · ${text.slice(0, 200)}`
+      if (text) detail = ` · 响应: ${text.slice(0, 300)}`
     } catch { /* ignore */ }
-    throw new Error(`API 请求失败: HTTP ${res.status} ${method} ${path}${detail}`)
+    const reqBody = body ? ` · 请求体: ${JSON.stringify(body).slice(0, 500)}` : ''
+    throw new Error(`API 请求失败: HTTP ${res.status} ${method} ${path}${detail}${reqBody}`)
   }
   const text = await res.text()
   try { return JSON.parse(text) } catch { return text }

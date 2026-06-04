@@ -26,13 +26,9 @@ function createWindow() {
 
   mainWindow.webContents.openDevTools()
 
-  if (process.env.ELECTRON_RENDERER_URL) {
-    console.log('Loading URL:', process.env.ELECTRON_RENDERER_URL)
-    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
-  } else {
-    console.log('Loading file:', join(__dirname, '../renderer/index.html'))
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
-  }
+  const devUrl = process.env.ELECTRON_RENDERER_URL || 'http://localhost:5173'
+  console.log('Loading URL:', devUrl)
+  mainWindow.loadURL(devUrl)
 }
 
 app.whenReady().then(() => {

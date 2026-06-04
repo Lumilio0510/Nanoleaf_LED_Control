@@ -209,6 +209,7 @@ export default function CanvasStage({
               key={p.id}
               panel={{ ...p, color: panelOverrides?.get(p.id) ?? p.color }}
               isSelected={selectedIds.has(p.id) && !simMode}
+              simMode={simMode}
               highlightedEdges={highlightEdgesFor(p.id)}
               onDragStart={simMode ? undefined : () => onPanelDragStart(p.id)}
               onDragMove={simMode ? undefined : (x, y, r) => handleDragMove(p.id, p.type, x, y, r)}

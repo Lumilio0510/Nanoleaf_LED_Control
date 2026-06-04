@@ -1,4 +1,5 @@
 import type { EffectEngine, FrameColors, HsbColor, PanelGraphReader } from '../types'
+import { PLUGIN_TICK_MS } from '../types'
 import { hsbToRgb } from '../color-utils'
 
 export class HighlightEngine implements EffectEngine {
@@ -15,22 +16,32 @@ export class HighlightEngine implements EffectEngine {
     const path = graph.getFlowPath()
     if (path.length === 0) return colors
 
-    const highlightMs = this.transTime * 100
-    const idx = Math.floor(elapsedMs / highlightMs) % path.length
+    const highlightMs = this.transTime * PLUGIN_TICK_MS
+    const cycleMs = highlightMs * path.length
+    const pos = (elapsedMs % cycleMs) / highlightMs // continuous position 0..path.length
 
     for (let i = 0; i < path.length; i++) {
-      if (i === idx) {
-        const ci = i % this.palette.length
-        colors.set(path[i], hsbToRgb(
-          this.palette[ci].hue,
-          this.palette[ci].saturation,
-          this.palette[ci].brightness,
-        ))
-      } else {
-        colors.set(path[i], { r: 8, g: 8, b: 8 })
-      }
+      const dist = Math.abs(i - pos)
+      const brightness = dist < 1.5
+        ? Math.cos(dist / 1.5 * Math.PI / 2)
+        : 0.03
+
+      // Discrete palette cycle per panel — each panel shows a distinct palette color
+      const ci = i % this.palette.length
+      const base = hsbToRgb(
+        this.palette[ci].hue,
+        this.palette[ci].saturation,
+        this.palette[ci].brightness,
+      )
+      colors.set(path[i], {
+        r: Math.round(base.r * brightness),
+        g: Math.round(base.g * brightness),
+        b: Math.round(base.b * brightness),
+      })
     }
 
     return colors
   }
+
+  destroy(): void {}
 }

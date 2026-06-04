@@ -1,4 +1,3 @@
-import * as nanoleafApi from '../nanoleaf-api.service'
 import { normalizeEffectDef } from '../nanoleaf-api.service'
 import * as skillService from '../skill.service'
 import { randomUUID } from 'crypto'
@@ -20,8 +19,8 @@ const pluginUuidDesc = Object.entries(PLUGIN_UUIDS).map(([k, v]) => `${k}: ${v}`
 export const skillToolDefs: ToolDef[] = [
   {
     name: 'createEffect',
-    description: `创建/更新一个 Nanoleaf 灯效并保存到 Skill 库。支持三种类型：
-1. plugin（动态特效）：使用内置插件如 Flow/Wheel/Random 等，需提供 pluginUuid、pluginType、pluginOptions、palette
+    description: `创建灯效方案并保存到 Skill 库（不会写入设备）。支持三种类型：
+1. plugin（动态特效）：使用内置插件如 Flow/Wheel/Random 等，需提供 pluginUuid、pluginType、pluginOptions（只放插件参数，包括 transTime、delayTime、direction、loop 等）、palette
 2. static（静态布局）：每面板独立颜色，需提供 animData 字符串
 3. solid（纯色）：最简单的统一纯色，只需一个 palette 颜色
 已知 pluginUuid 和对应名称：${pluginUuidDesc}`,
@@ -30,7 +29,7 @@ export const skillToolDefs: ToolDef[] = [
       properties: {
         effectDefinition: {
           type: 'object',
-          description: '完整的 Nanoleaf effect JSON，command 固定为 "add"，version 固定为 "2.0"',
+          description: '完整的 Nanoleaf effect JSON，command 固定为 "add"，version 固定为 "2.0"，loop 如需循环请在 pluginOptions 中设置',
           properties: {
             command: { type: 'string', enum: ['add'] },
             animName: { type: 'string', description: '特效名称' },
@@ -43,29 +42,16 @@ export const skillToolDefs: ToolDef[] = [
       },
       required: ['effectDefinition']
     }
-  },
-  {
-    name: 'previewEffect',
-    description: '临时预览灯效，不保存到设备上。duration 秒后自动恢复到之前状态',
-    parameters: {
-      type: 'object',
-      properties: {
-        effectDefinition: {
-          type: 'object',
-          description: '完整的 Nanoleaf effect JSON，不含 command 字段（自动使用 display）'
-        },
-        duration: { type: 'number', description: '预览持续秒数，默认 10', minimum: 1, maximum: 300 }
-      },
-      required: ['effectDefinition']
-    }
   }
 ]
 
 export const skillExecutors: Record<string, ToolExecutor> = {
   createEffect: async (args) => {
-    const def = normalizeEffectDef(args.effectDefinition as Record<string, unknown>)
-    const writePayload: Record<string, unknown> = { command: 'add', ...def }
-    await nanoleafApi.sendRequest('PUT', '/effects', { write: writePayload })
+    const effectDef = args.effectDefinition as Record<string, unknown> | undefined
+    if (!effectDef || typeof effectDef !== 'object' || !effectDef.animName) {
+      throw new Error('createEffect 缺少有效的 effectDefinition 参数，请重新生成')
+    }
+    const def = normalizeEffectDef(effectDef)
 
     const skillId = randomUUID()
     const pluginName = typeof def.pluginUuid === 'string' ? PLUGIN_UUIDS[def.pluginUuid] : undefined
@@ -82,17 +68,10 @@ export const skillExecutors: Record<string, ToolExecutor> = {
       params: [] as { key: string; label: string; type: string; default: unknown }[],
       mapping: {
         endpoint: 'PUT /effects',
-        bodyTemplate: { write: writePayload }
+        bodyTemplate: { write: { command: 'add', ...def } }
       }
     }
     skillService.saveSkill(skill)
     return { skillId: skill.meta.id, skillName: skill.meta.name, effectDef: def, pluginName: pluginName || null }
-  },
-  previewEffect: async (args) => {
-    const def = normalizeEffectDef(args.effectDefinition as Record<string, unknown>)
-    const duration = (args.duration as number) || 10
-    const displayPayload: Record<string, unknown> = { command: 'display', duration, version: '2.0', ...def }
-    await nanoleafApi.sendRequest('PUT', '/effects', { write: displayPayload })
-    return { success: true, duration }
   }
 }

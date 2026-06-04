@@ -1,0 +1,149 @@
+{
+  "id": "1f68d895-95cc-421c-81e1-bba11104c533",
+  "name": "赛博之境",
+  "panels": [
+    {
+      "id": "a9e6390d-027a-4cc2-a3ec-a827eafca79d",
+      "type": "triangle",
+      "x": 337.4882514590678,
+      "y": 101.32245355380076,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": null
+    },
+    {
+      "id": "d175665f-46b9-4e50-8aac-396a586129af",
+      "type": "triangle",
+      "x": 337.4882514590678,
+      "y": 178.6873896252106,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "a9e6390d-027a-4cc2-a3ec-a827eafca79d",
+        "connectionIndex": 3
+      }
+    },
+    {
+      "id": "5a56fbd8-ffc4-495e-a01f-3a69ffe4c82f",
+      "type": "triangle",
+      "x": 404.4882514590678,
+      "y": 217.36985766091556,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "d175665f-46b9-4e50-8aac-396a586129af",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "c4717941-c46a-4687-927f-e4f68ced54d9",
+      "type": "triangle",
+      "x": 471.4882514590678,
+      "y": 178.6873896252106,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "5a56fbd8-ffc4-495e-a01f-3a69ffe4c82f",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "500e89b8-2f75-4981-b2da-dd21b99aab23",
+      "type": "triangle",
+      "x": 404.4882514590678,
+      "y": 294.7347937323254,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "5a56fbd8-ffc4-495e-a01f-3a69ffe4c82f",
+        "connectionIndex": 3
+      }
+    },
+    {
+      "id": "ea3c0dfe-5977-4e55-a97e-2403938d25bd",
+      "type": "triangle",
+      "x": 471.4882514590678,
+      "y": 101.32245355380076,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "c4717941-c46a-4687-927f-e4f68ced54d9",
+        "connectionIndex": 5
+      }
+    },
+    {
+      "id": "4019bd71-9eb2-41ba-acbb-bf7353d8f632",
+      "type": "triangle",
+      "x": 538.4882514590678,
+      "y": 62.63998551809583,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "ea3c0dfe-5977-4e55-a97e-2403938d25bd",
+        "connectionIndex": 0
+      }
+    },
+    {
+      "id": "6d7efa85-e277-4bf1-a1b6-fd0d34bb968a",
+      "type": "triangle",
+      "x": 605.4882514590678,
+      "y": 101.32245355380076,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "4019bd71-9eb2-41ba-acbb-bf7353d8f632",
+        "connectionIndex": 0
+      }
+    },
+    {
+      "id": "f3d32c7e-da84-45df-b781-dc0695d32b61",
+      "type": "triangle",
+      "x": 672.4882514590678,
+      "y": 62.63998551809583,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "6d7efa85-e277-4bf1-a1b6-fd0d34bb968a",
+        "connectionIndex": 0
+      }
+    },
+    {
+      "id": "6d637c36-e41c-4e98-8a1e-ffaf2e9d4682",
+      "type": "triangle",
+      "x": 270.4882514590678,
+      "y": 62.63998551809582,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "a9e6390d-027a-4cc2-a3ec-a827eafca79d",
+        "connectionIndex": 4
+      }
+    },
+    {
+      "id": "ed8c5c24-b343-4e82-8c15-07fec6b380f7",
+      "type": "triangle",
+      "x": 203.48825145906778,
+      "y": 101.32245355380074,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "6d637c36-e41c-4e98-8a1e-ffaf2e9d4682",
+        "connectionIndex": 3
+      }
+    },
+    {
+      "id": "d02791ed-bc6c-425d-87fb-d03f258e6651",
+      "type": "triangle",
+      "x": 136.48825145906775,
+      "y": 62.639985518095806,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "ed8c5c24-b343-4e82-8c15-07fec6b380f7",
+        "connectionIndex": 4
+      }
+    }
+  ],
+  "createdAt": "2026-06-02T01:33:48.030Z",
+  "updatedAt": "2026-06-02T01:34:35.387Z"
+}

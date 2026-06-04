@@ -1,0 +1,164 @@
+{
+  "id": "51aefaa0-589a-411d-932f-e81420fa74c3",
+  "name": "心跳信号链",
+  "panels": [
+    {
+      "id": "11c1b29e-e311-408d-9c5c-f62f0de84625",
+      "type": "triangle",
+      "x": 76.68789920924144,
+      "y": -40.93228403701363,
+      "rotation": 120,
+      "color": "#cccccc",
+      "snappedTo": null
+    },
+    {
+      "id": "a4eb463f-4ae1-4981-bdf6-9704e3daf163",
+      "type": "triangle",
+      "x": -60.48631203904387,
+      "y": 38.662628662608654,
+      "rotation": 180,
+      "color": "#cccccc",
+      "snappedTo": null
+    },
+    {
+      "id": "43c4a9e8-88f7-4409-81ba-74dc1b94ead5",
+      "type": "triangle",
+      "x": 274.8284265678757,
+      "y": -39.238775256170584,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": null
+    },
+    {
+      "id": "812f71aa-c220-4681-b3d4-c254c35fd788",
+      "type": "triangle",
+      "x": 341.8284265678757,
+      "y": -77.92124329187553,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "43c4a9e8-88f7-4409-81ba-74dc1b94ead5",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "bb715250-4150-4a6d-948d-0eb8aad7f5d6",
+      "type": "triangle",
+      "x": 408.8284265678757,
+      "y": -39.23877525617059,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "812f71aa-c220-4681-b3d4-c254c35fd788",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "537011a7-7286-4ffa-ab35-2a58d2b23505",
+      "type": "triangle",
+      "x": 274.8284265678757,
+      "y": 38.126160815239274,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "43c4a9e8-88f7-4409-81ba-74dc1b94ead5",
+        "connectionIndex": 2
+      }
+    },
+    {
+      "id": "706096ab-d93e-4b7c-9b1c-7a6fda6e6199",
+      "type": "triangle",
+      "x": 341.8284265678757,
+      "y": 76.8086288509442,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "537011a7-7286-4ffa-ab35-2a58d2b23505",
+        "connectionIndex": 0
+      }
+    },
+    {
+      "id": "faa53e4a-99e1-4403-a666-0416cc2cc81b",
+      "type": "triangle",
+      "x": 408.8284265678757,
+      "y": 38.126160815239274,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "706096ab-d93e-4b7c-9b1c-7a6fda6e6199",
+        "connectionIndex": 0
+      }
+    },
+    {
+      "id": "6665adb9-aa29-4d65-88de-fdb028c53e20",
+      "type": "triangle",
+      "x": 574.5794807770917,
+      "y": -78.1894772155602,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": null
+    },
+    {
+      "id": "e7f33a72-6507-47a1-b413-77c0d7a20045",
+      "type": "triangle",
+      "x": 641.5794807770917,
+      "y": -39.50700917985528,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "6665adb9-aa29-4d65-88de-fdb028c53e20",
+        "connectionIndex": 0
+      }
+    },
+    {
+      "id": "2d4986e2-917b-4c27-89c6-a821d36677f1",
+      "type": "triangle",
+      "x": 708.5794807770917,
+      "y": -78.18947721556022,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "e7f33a72-6507-47a1-b413-77c0d7a20045",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "dae427b6-a098-4b8d-8bc7-b3fc69f30031",
+      "type": "triangle",
+      "x": 641.5794807770917,
+      "y": 37.85792689155457,
+      "rotation": 180,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "e7f33a72-6507-47a1-b413-77c0d7a20045",
+        "connectionIndex": 2
+      }
+    },
+    {
+      "id": "75a2243c-6880-4e7a-b594-303a0824d5ca",
+      "type": "triangle",
+      "x": 574.5794807770917,
+      "y": -155.55441328697006,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "6665adb9-aa29-4d65-88de-fdb028c53e20",
+        "connectionIndex": 4
+      }
+    },
+    {
+      "id": "57f0d471-4140-426c-bee0-f920c7666454",
+      "type": "triangle",
+      "x": 708.5794807770917,
+      "y": -155.55441328697006,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "2d4986e2-917b-4c27-89c6-a821d36677f1",
+        "connectionIndex": 5
+      }
+    }
+  ],
+  "createdAt": "2026-06-02T01:30:23.684Z",
+  "updatedAt": "2026-06-02T01:32:14.493Z"
+}

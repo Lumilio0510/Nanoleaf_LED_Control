@@ -1,4 +1,5 @@
 import type { EffectEngine, FrameColors, HsbColor, PanelGraphReader } from '../types'
+import { PLUGIN_TICK_MS } from '../types'
 import { paletteIndex } from '../color-utils'
 
 export class ExplodeEngine implements EffectEngine {
@@ -29,7 +30,7 @@ export class ExplodeEngine implements EffectEngine {
       if (d > maxDist) maxDist = d
     }
 
-    const speed = 0.5 / (this.transTime * 100) // waves per ms
+    const speed = 0.5 / (this.transTime * PLUGIN_TICK_MS) // waves per ms
     const wavePhase = (elapsedMs * speed) % 1
 
     for (const [id, node] of graph.nodes) {
@@ -50,4 +51,6 @@ export class ExplodeEngine implements EffectEngine {
 
     return colors
   }
+
+  destroy(): void {}
 }

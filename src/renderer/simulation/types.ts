@@ -27,11 +27,18 @@ export interface PanelNode {
 export interface PanelGraphReader {
   nodes: Map<string, PanelNode>
   getFlowPath(startId?: string): string[]
+  getSpatialPath(direction: string): string[]
   getConnectedComponents(): string[][]
   getDistancesFrom(centerId: string): Map<string, number>
 }
 
+/** Empirically determined firmware tick — Nanoleaf docs say 100ms (tenths of second)
+ *  but real hardware runs ~3× faster. 30ms matches observed behavior. */
+export const PLUGIN_TICK_MS = 30
+
 export interface EffectEngine {
   init(palette: HsbColor[], options: Record<string, unknown>): void
   getColors(elapsedMs: number, graph: PanelGraphReader): FrameColors
+  /** Clean up any resources allocated by init(). Called when engine is stopped. */
+  destroy(): void
 }

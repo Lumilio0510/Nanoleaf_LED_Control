@@ -42,5 +42,9 @@ export const ollamaAdapter: LLMAdapter = {
 
   async chatWithTools(_messages: ChatMessage[], _tools: ToolDef[], _config: LLMConfig): Promise<ToolCallResponse> {
     throw new Error('Tool calling 仅支持 OpenAI 兼容 API，Ollama 暂不支持。请在设置中切换到 OpenAI 提供商。')
+  },
+
+  async chatWithToolsStream(_messages: ChatMessage[], _tools: ToolDef[], _config: LLMConfig, _onChunk: (chunk: string) => void): Promise<ToolCallResponse> {
+    throw new Error('Tool calling 仅支持 OpenAI 兼容 API，Ollama 暂不支持。请在设置中切换到 OpenAI 提供商。')
   }
 }

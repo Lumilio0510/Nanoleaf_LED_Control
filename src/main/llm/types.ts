@@ -35,4 +35,5 @@ export interface LLMAdapter {
   chat(messages: ChatMessage[], config: LLMConfig): Promise<string>
   chatStream(messages: ChatMessage[], config: LLMConfig, onChunk: (chunk: string) => void): Promise<string>
   chatWithTools(messages: ChatMessage[], tools: ToolDef[], config: LLMConfig): Promise<ToolCallResponse>
+  chatWithToolsStream(messages: ChatMessage[], tools: ToolDef[], config: LLMConfig, onChunk: (chunk: string) => void): Promise<ToolCallResponse>
 }

@@ -1,0 +1,113 @@
+{
+  "id": "046471a9-1a43-45c1-b2b7-d0339b2aa7f5",
+  "name": "极夜星坠",
+  "panels": [
+    {
+      "id": "a3561a2f-8468-4b20-9dd9-70f57adda8f5",
+      "type": "triangle",
+      "x": 182.60000610351562,
+      "y": 314.8499984741211,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": null
+    },
+    {
+      "id": "5d9b2991-c2a1-4cad-a1fe-557f466a0b07",
+      "type": "triangle",
+      "x": 283.1000061035156,
+      "y": 295.50876445626864,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "a3561a2f-8468-4b20-9dd9-70f57adda8f5",
+        "connectionIndex": 0
+      }
+    },
+    {
+      "id": "bb831664-b1c1-4b28-b209-648155ac6779",
+      "type": "triangle",
+      "x": 383.6000061035156,
+      "y": 314.8499984741211,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "5d9b2991-c2a1-4cad-a1fe-557f466a0b07",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "6cd8fe40-b611-4802-862d-16242d048002",
+      "type": "triangle",
+      "x": 383.6000061035156,
+      "y": 237.48506240271126,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "bb831664-b1c1-4b28-b209-648155ac6779",
+        "connectionIndex": 5
+      }
+    },
+    {
+      "id": "8d22b017-e0c2-423f-90f4-9844e1794141",
+      "type": "triangle",
+      "x": 484.1000061035156,
+      "y": 256.8262964205637,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "6cd8fe40-b611-4802-862d-16242d048002",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "96372d2d-45ad-4a45-b12c-8b0265569f1d",
+      "type": "triangle",
+      "x": 584.6000061035156,
+      "y": 237.48506240271124,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "8d22b017-e0c2-423f-90f4-9844e1794141",
+        "connectionIndex": 0
+      }
+    },
+    {
+      "id": "d64f4b51-cde4-46ce-96f7-47679949c7ce",
+      "type": "triangle",
+      "x": 584.6000061035156,
+      "y": 314.8499984741211,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "96372d2d-45ad-4a45-b12c-8b0265569f1d",
+        "connectionIndex": 3
+      }
+    },
+    {
+      "id": "dc621fd7-e078-499d-9d05-63df7fbc256a",
+      "type": "triangle",
+      "x": 685.1000061035156,
+      "y": 295.50876445626864,
+      "rotation": 0,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "d64f4b51-cde4-46ce-96f7-47679949c7ce",
+        "connectionIndex": 0
+      }
+    },
+    {
+      "id": "bb6beaac-53a4-42bf-97d5-bfdd5108ff56",
+      "type": "triangle",
+      "x": 785.6000061035156,
+      "y": 314.8499984741211,
+      "rotation": 60,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "dc621fd7-e078-499d-9d05-63df7fbc256a",
+        "connectionIndex": 1
+      }
+    }
+  ],
+  "createdAt": "2026-06-01T07:17:33.015Z",
+  "updatedAt": "2026-06-01T07:18:54.053Z"
+}

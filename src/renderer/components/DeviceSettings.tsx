@@ -22,7 +22,7 @@ export default function DeviceSettings() {
       <CardHeader title="已保存设备" slotProps={{ title: { variant: 'h6' } }} />
       <CardContent sx={{ pt: 0 }}>
         {devices.length === 0 ? (
-          <Typography variant="body2" color="text.disabled" textAlign="center" sx={{ py: 4 }}>
+          <Typography variant="body2" color="text.disabled" sx={{ textAlign: 'center', py: 4 }}>
             暂无设备，请到控制面板添加
           </Typography>
         ) : (

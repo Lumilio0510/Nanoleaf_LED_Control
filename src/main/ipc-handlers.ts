@@ -8,7 +8,6 @@ import * as skillService from './skill.service'
 import { executeSkill } from './skill-executor'
 import * as agentService from './agent.service'
 import * as designService from './design.service'
-import * as canvasAgentService from './canvas-agent.service'
 import { readJSON, writeJSON } from './storage'
 import { rgbToHsb } from './color-converter'
 import type { LLMConfig } from '../shared/types'
@@ -106,7 +105,8 @@ export function registerHandlers() {
 
   ipcMain.handle(IPC.CONTROL_WRITE_EFFECT, async (_event, effectDef: Record<string, unknown>) => {
     const normalized = normalizeEffectDef(effectDef)
-    await nanoleafApi.sendRequest('PUT', '/effects', { write: normalized })
+    const writePayload: Record<string, unknown> = { command: 'add', ...normalized }
+    await nanoleafApi.sendRequest('PUT', '/effects', { write: writePayload })
   })
 
   ipcMain.handle(IPC.CONTROL_EFFECT_LIST, async () => {
@@ -236,9 +236,5 @@ export function registerHandlers() {
       return result.filePath
     }
     return null
-  })
-
-  ipcMain.handle(IPC.DESIGN_AI_GENERATE, async (_event, description: string) => {
-    return canvasAgentService.generatePanels(description)
   })
 }

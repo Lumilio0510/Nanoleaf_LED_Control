@@ -1,0 +1,134 @@
+{
+  "id": "db9f8980-1d18-4ca3-b1d2-7ad3924cb128",
+  "name": "萌趣米妮",
+  "panels": [
+    {
+      "id": "aece4bf5-f584-483d-9c20-51333132d5ae",
+      "type": "hexagon",
+      "x": 521.5589924153097,
+      "y": -321.1195326194919,
+      "rotation": 30,
+      "color": "#cccccc",
+      "snappedTo": null
+    },
+    {
+      "id": "80b636d4-efa2-4f73-a3e0-c4d795778a55",
+      "type": "triangle",
+      "x": 598.9239284867195,
+      "y": -388.1195326194919,
+      "rotation": 30,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "aece4bf5-f584-483d-9c20-51333132d5ae",
+        "connectionIndex": 4
+      }
+    },
+    {
+      "id": "e368038b-5bee-4fb9-a5c8-fcff3200b34e",
+      "type": "triangle",
+      "x": 444.1940563438999,
+      "y": -388.1195326194919,
+      "rotation": 90,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "aece4bf5-f584-483d-9c20-51333132d5ae",
+        "connectionIndex": 3
+      }
+    },
+    {
+      "id": "774caeb1-aab5-456b-92e3-b14fbe67449f",
+      "type": "hexagon",
+      "x": 695.6300985759818,
+      "y": -421.6195326194919,
+      "rotation": 30,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "80b636d4-efa2-4f73-a3e0-c4d795778a55",
+        "connectionIndex": 0
+      }
+    },
+    {
+      "id": "1e2311b9-ed2a-4549-8505-d1917abb7ddc",
+      "type": "hexagon",
+      "x": 347.4878862546376,
+      "y": -421.61953261949185,
+      "rotation": 90,
+      "color": "#cccccc",
+      "snappedTo": null
+    },
+    {
+      "id": "95fd4efa-a3ee-41c1-a0c4-5b2b0258b66b",
+      "type": "triangle",
+      "x": 676.2888645581294,
+      "y": -321.1195326194919,
+      "rotation": 90,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "80b636d4-efa2-4f73-a3e0-c4d795778a55",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "15433e70-1c31-4cf1-8cad-8d64f5bcaa57",
+      "type": "triangle",
+      "x": 366.82912027249,
+      "y": -321.1195326194919,
+      "rotation": 150,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "e368038b-5bee-4fb9-a5c8-fcff3200b34e",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "c634d6e3-8206-48c2-9b21-7a7dd11c7bda",
+      "type": "triangle",
+      "x": 772.9950346473917,
+      "y": -287.6195326194919,
+      "rotation": 30,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "95fd4efa-a3ee-41c1-a0c4-5b2b0258b66b",
+        "connectionIndex": 0
+      }
+    },
+    {
+      "id": "30df3f78-bf82-4825-aecd-e2575943fe00",
+      "type": "triangle",
+      "x": 270.12295018322766,
+      "y": -287.6195326194919,
+      "rotation": 90,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "15433e70-1c31-4cf1-8cad-8d64f5bcaa57",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "16dd000b-f1df-4c9c-84a8-0edca5531b62",
+      "type": "mini-triangle",
+      "x": 831.018736700949,
+      "y": -254.1195326194919,
+      "rotation": 90,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "c634d6e3-8206-48c2-9b21-7a7dd11c7bda",
+        "connectionIndex": 1
+      }
+    },
+    {
+      "id": "db0780c6-a3b4-40dd-84f3-0c6c32571c38",
+      "type": "mini-triangle",
+      "x": 212.0992481296703,
+      "y": -254.1195326194919,
+      "rotation": 30,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "30df3f78-bf82-4825-aecd-e2575943fe00",
+        "connectionIndex": 2
+      }
+    }
+  ],
+  "createdAt": "2026-06-01T08:55:37.126Z",
+  "updatedAt": "2026-06-01T08:56:37.827Z"
+}

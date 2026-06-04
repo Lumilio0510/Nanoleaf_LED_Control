@@ -56,7 +56,7 @@ ${deviceContext}
 - 简单控制指令（开关/调亮度/改颜色）→ 直接调用对应工具
 - 查询状态 → 调用查询工具获取实时数据
 - 特效管理 → 调用特效管理工具
-- 创建灯效 → 调用 createEffect 工具
+- 创建灯效 → 调用 createEffect 工具（仅保存到 Skill 库，不写入设备）
 - 不知道当前状态时先查询再操作
 
 ## 回复风格
@@ -67,7 +67,7 @@ ${deviceContext}
 生成灯效时，优先使用 plugin 类型（动态特效）：
 - 选择最匹配的 pluginUuid（flow=流动渐变, wheel=旋转渐变, explode=爆炸扩散, fade=同步渐变, random=随机变化, highlight=高亮）
 - palette（注意全小写）指定 2-6 个 HSB 颜色（hue:0-360, saturation:0-100, brightness:0-100）
-- pluginOptions 设置合理参数值（transTime: 过渡时间 1-600 单位0.1秒, loop: 是否循环, linDirection: 方向等）
+- pluginOptions 只放插件本身的参数（transTime: 过渡时间 1-600 单位0.1秒, delayTime: 停留时间 1-600 单位0.1秒, direction: 流动方向 left|right|up|down 等, loop: 是否循环, paletteSubSteps: 渐变层级数 0-10，值越大相邻颜色间中间色越多过渡越平滑，默认3）
 - animName 只用英文字母、数字、空格、下划线（Nanoleaf 不支持中文等非 ASCII 字符！）
 - 版本字段 version 固定为 "2.0"
 - colorType 固定为 "HSB"
@@ -138,15 +138,10 @@ async function runWithToolsStream(
   let round = 0
   while (round < MAX_TOOL_ROUNDS) {
     round++
-    const response = await adapter.chatWithTools(messages, allToolDefs, config)
+    const response = await adapter.chatWithToolsStream(messages, allToolDefs, config, onChunk)
 
     if (response.finishReason === 'stop') {
-      const text = response.content || ''
-      for (let i = 0; i < text.length; i++) {
-        onChunk(text[i])
-        await sleep(10)
-      }
-      return { content: text, toolCalls: toolCallRecords }
+      return { content: response.content || '', toolCalls: toolCallRecords }
     }
 
     for (const tc of response.toolCalls) {
@@ -188,11 +183,6 @@ async function runWithToolsStream(
   onChunk('（已达到最大操作轮数，如有需要请继续指示）')
   return { content: '（已达到最大操作轮数，如有需要请继续指示）', toolCalls: toolCallRecords }
 }
-
-function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
 // ====== 公开 API ======
 
 export async function chat(sessionId: string, userMessage: string): Promise<ChatMessage> {

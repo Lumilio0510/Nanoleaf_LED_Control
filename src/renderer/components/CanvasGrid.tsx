@@ -20,7 +20,7 @@ export default function CanvasGrid({ width, height, offsetX, offsetY, scale, gri
   return (
     <>
       {lines.map((pts, i) => (
-        <Line key={i} points={pts} stroke="#333" strokeWidth={1 / scale} listening={false} />
+        <Line key={i} points={pts} stroke="#ddd" strokeWidth={1 / scale} listening={false} />
       ))}
     </>
   )

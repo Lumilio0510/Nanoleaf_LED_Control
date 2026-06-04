@@ -82,6 +82,24 @@ export class PanelGraph {
     return path
   }
 
+  /** Spatial path: sort panels by geometric position matching Nanoleaf's linDirection.
+   *  Direction indicates gradient orientation: "right" = gradient left→right (leftmost first). */
+  getSpatialPath(direction: string): string[] {
+    const entries = Array.from(this._nodes.entries())
+    if (entries.length === 0) return []
+
+    const sorted = entries.sort(([, a], [, b]) => {
+      switch (direction) {
+        case 'left':  return b.x - a.x          // gradient right→left: rightmost first
+        case 'right': return a.x - b.x          // gradient left→right: leftmost first
+        case 'up':    return b.y - a.y          // gradient bottom→top: bottommost first (Y↓)
+        case 'down':  return a.y - b.y          // gradient top→bottom: topmost first (Y↓)
+        default:      return a.x - b.x
+      }
+    })
+    return sorted.map(([id]) => id)
+  }
+
   /** Find the node with the most connections */
   private findCenterNode(): string {
     let best = ''

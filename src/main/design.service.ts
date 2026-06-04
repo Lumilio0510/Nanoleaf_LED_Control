@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from 'fs'
 import { join, resolve } from 'path'
-import { v4 as uuid } from 'uuid'
+import { randomUUID } from 'crypto'
 import type { CanvasDesign, CanvasDesignMeta } from '../shared/canvas-types'
 
 function getDesignsDir(): string {
@@ -29,11 +29,18 @@ export function saveDesign(design: CanvasDesign): CanvasDesignMeta {
   return { id: design.id, name: design.name, updatedAt: design.updatedAt }
 }
 
+export function renameDesign(id: string, newName: string): CanvasDesignMeta {
+  const design = loadDesign(id)
+  if (!design) throw new Error(`Design ${id} not found`)
+  design.name = newName
+  return saveDesign(design)
+}
+
 export function deleteDesign(id: string): void {
   const fp = join(getDesignsDir(), `${id}.json`)
   if (existsSync(fp)) unlinkSync(fp)
 }
 
 export function createDesign(name: string): CanvasDesign {
-  return { id: uuid(), name, panels: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+  return { id: randomUUID(), name, panels: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
 }

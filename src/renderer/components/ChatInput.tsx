@@ -4,19 +4,26 @@ import IconButton from '@mui/material/IconButton'
 import Stack from '@mui/material/Stack'
 import SendIcon from '@mui/icons-material/Send'
 
+let cachedDraft = ''
+
 interface Props {
   onSend: (text: string) => void
   disabled: boolean
 }
 
 export default function ChatInput({ onSend, disabled }: Props) {
-  const [text, setText] = useState('')
+  const [draft, setDraft] = useState(cachedDraft)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  function handleChange(text: string) {
+    setDraft(text)
+    cachedDraft = text
+  }
+
   function handleSend() {
-    if (!text.trim() || disabled) return
-    onSend(text.trim())
-    setText('')
+    if (!draft.trim() || disabled) return
+    onSend(draft.trim())
+    handleChange('')
     inputRef.current?.focus()
   }
 
@@ -27,15 +34,15 @@ export default function ChatInput({ onSend, disabled }: Props) {
         fullWidth
         size="small"
         placeholder="描述你想要的灯效..."
-        value={text}
-        onChange={e => setText(e.target.value)}
+        value={draft}
+        onChange={e => handleChange(e.target.value)}
         onKeyDown={e => { if (e.key === 'Enter') handleSend() }}
         disabled={disabled}
       />
       <IconButton
         color="primary"
         onClick={handleSend}
-        disabled={disabled || !text.trim()}
+        disabled={disabled || !draft.trim()}
         sx={{ bgcolor: 'primary.main', color: 'white', borderRadius: 2, '&:hover': { bgcolor: 'primary.dark' }, '&.Mui-disabled': { opacity: 0.4 } }}
       >
         <SendIcon />

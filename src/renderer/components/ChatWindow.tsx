@@ -100,8 +100,8 @@ function ToolCallResult({ name, args, result, error }: {
     )
   }
 
-  // Render rich EffectCard for createEffect / previewEffect
-  if ((name === 'createEffect' || name === 'previewEffect') && args.effectDefinition) {
+  // Render rich EffectCard for createEffect
+  if (name === 'createEffect' && args.effectDefinition) {
     const def = args.effectDefinition as Record<string, unknown>
     return <EffectCard effectDef={def} />
   }

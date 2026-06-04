@@ -154,17 +154,6 @@ export function useCanvasDesign() {
     })
   }, [design, pushUndo])
 
-  const replaceAllPanels = useCallback((panels: PlacedPanel[]) => {
-    if (!design) return
-    pushUndo()
-    setDesign({
-      ...design,
-      panels,
-      updatedAt: new Date().toISOString(),
-    })
-    setSelectedIds(new Set())
-  }, [design, pushUndo])
-
   const selectAll = useCallback(() => {
     if (!design) return
     setSelectedIds(new Set(design.panels.map(p => p.id)))
@@ -185,6 +174,6 @@ export function useCanvasDesign() {
   return {
     design, designs, toolMode, selectedIds, setDesign, setToolMode, setSelectedIds,
     refreshDesigns, newDesign, loadDesign, saveDesign, deleteDesign, renameDesign,
-    addPanel, movePanel, movePanelEnd, batchUpdatePanels, updatePanelColor, deleteSelected, rotatePanel, selectAll, undo, replaceAllPanels,
+    addPanel, movePanel, movePanelEnd, batchUpdatePanels, updatePanelColor, deleteSelected, rotatePanel, selectAll, undo,
   }
 }

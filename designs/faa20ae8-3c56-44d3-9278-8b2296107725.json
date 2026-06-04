@@ -1,0 +1,89 @@
+{
+  "id": "faa20ae8-3c56-44d3-9278-8b2296107725",
+  "name": "算法测试",
+  "panels": [
+    {
+      "id": "215e4898-d11b-494b-b656-59e4661f1384",
+      "type": "hexagon",
+      "x": 172,
+      "y": 283.8499984741211,
+      "rotation": 30,
+      "color": "#cccccc",
+      "snappedTo": null
+    },
+    {
+      "id": "b4b62c92-d35f-4e05-8a28-770c5c7a4806",
+      "type": "hexagon",
+      "x": 288.04740410711474,
+      "y": 283.8499984741211,
+      "rotation": 90,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "215e4898-d11b-494b-b656-59e4661f1384",
+        "connectionIndex": 5
+      }
+    },
+    {
+      "id": "b87618a2-1d04-4aaa-8762-503e54a69133",
+      "type": "hexagon",
+      "x": 404.0948082142295,
+      "y": 283.8499984741211,
+      "rotation": 30,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "b4b62c92-d35f-4e05-8a28-770c5c7a4806",
+        "connectionIndex": 4
+      }
+    },
+    {
+      "id": "055563d1-f723-43c7-b057-c3ece42112e9",
+      "type": "hexagon",
+      "x": 520.1422123213442,
+      "y": 283.8499984741211,
+      "rotation": 30,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "b87618a2-1d04-4aaa-8762-503e54a69133",
+        "connectionIndex": 5
+      }
+    },
+    {
+      "id": "51609b03-db6d-47e0-89d3-c30bd423ef30",
+      "type": "hexagon",
+      "x": 636.189616428459,
+      "y": 283.8499984741211,
+      "rotation": 30,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "055563d1-f723-43c7-b057-c3ece42112e9",
+        "connectionIndex": 5
+      }
+    },
+    {
+      "id": "8654e04d-3876-4988-adea-240b4d87a75d",
+      "type": "hexagon",
+      "x": 752.2370205355737,
+      "y": 283.8499984741211,
+      "rotation": 30,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "51609b03-db6d-47e0-89d3-c30bd423ef30",
+        "connectionIndex": 5
+      }
+    },
+    {
+      "id": "947446f1-831d-4051-a4c7-4121503236d8",
+      "type": "hexagon",
+      "x": 868.2844246426885,
+      "y": 283.8499984741211,
+      "rotation": 30,
+      "color": "#cccccc",
+      "snappedTo": {
+        "panelId": "8654e04d-3876-4988-adea-240b4d87a75d",
+        "connectionIndex": 5
+      }
+    }
+  ],
+  "createdAt": "2026-06-03T05:03:30.603Z",
+  "updatedAt": "2026-06-04T03:38:56.600Z"
+}

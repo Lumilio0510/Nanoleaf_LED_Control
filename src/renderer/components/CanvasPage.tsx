@@ -13,11 +13,16 @@ import type Konva from 'konva'
 import CanvasToolbar from './CanvasToolbar'
 import CanvasStage from './CanvasStage'
 import ColorPanel from './ColorPanel'
-import CanvasAIDialog from './CanvasAIDialog'
 import { useCanvasDesign } from '../hooks/useCanvasDesign'
 import { panelsOverlap, findBestSnap } from '../utils/panelGeometry'
-import type { SnappedTo, PlacedPanel, PanelType } from '../../shared/canvas-types'
+import type { SnappedTo } from '../../shared/canvas-types'
 import { api } from '../api'
+import SimEffectPanel from './SimEffectPanel'
+import { useSkills } from '../hooks/useSkills'
+import { SimulationEngine } from '../simulation/SimulationEngine'
+import { rgbToHex } from '../simulation/color-utils'
+import type { RgbColor } from '../simulation/types'
+import type { Skill } from '../types'
 
 const SNAP_THRESHOLD = 20
 
@@ -26,14 +31,21 @@ export default function CanvasPage() {
   const dragOrigins = useRef<Map<string, { x: number; y: number }>>(new Map())
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
-  const [aiDialogOpen, setAiDialogOpen] = useState(false)
   const {
     design, designs, toolMode, selectedIds, setToolMode, setSelectedIds,
     refreshDesigns, newDesign, loadDesign, saveDesign, deleteDesign, renameDesign,
-    addPanel, movePanelEnd, batchUpdatePanels, updatePanelColor, deleteSelected, rotatePanel, selectAll, undo, replaceAllPanels,
+    addPanel, movePanelEnd, batchUpdatePanels, updatePanelColor, deleteSelected, rotatePanel, selectAll, undo,
   } = useCanvasDesign()
+  const [canvasMode, setCanvasMode] = useState<'edit' | 'sim'>('edit')
+  const [activeSkillId, setActiveSkillId] = useState<string | null>(null)
+  const [panelColors, setPanelColors] = useState<Map<string, string>>(new Map())
+  const engineRef = useRef<SimulationEngine | null>(null)
+  const { skills } = useSkills()
 
   useEffect(() => { refreshDesigns() }, [refreshDesigns])
+
+  // Cleanup engine on unmount
+  useEffect(() => { return () => { engineRef.current?.stop() } }, [])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -43,6 +55,7 @@ export default function CanvasPage() {
       if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo() }
       if (e.ctrlKey && e.key === 'a') { e.preventDefault(); selectAll() }
       if (e.ctrlKey && e.key === 's') { e.preventDefault(); saveDesign() }
+      if (e.key === 'Tab') { e.preventDefault(); setCanvasMode(m => m === 'edit' ? 'sim' : 'edit') }
       if (e.key === 'v' || e.key === 'V') setToolMode('select')
       if (e.key === '1') setToolMode('hexagon')
       if (e.key === '2') setToolMode('triangle')
@@ -79,6 +92,36 @@ export default function CanvasPage() {
     await api.exportDesignImage(dataUrl)
   }, [])
 
+  const handleCanvasModeChange = useCallback((m: 'edit' | 'sim') => {
+    if (m === 'edit') {
+      engineRef.current?.stop()
+      setPanelColors(new Map())
+      setActiveSkillId(null)
+    }
+    setCanvasMode(m)
+  }, [])
+
+  const handleSimPlay = useCallback((skill: Skill) => {
+    if (!design) return
+    engineRef.current?.stop()
+    const engine = new SimulationEngine()
+    engineRef.current = engine
+    setActiveSkillId(skill.meta.id)
+    const bodyTemplate = skill.mapping?.bodyTemplate ?? {}
+    engine.start(bodyTemplate, design.panels, (colors: Map<string, RgbColor>) => {
+      const hexMap = new Map<string, string>()
+      colors.forEach((rgb, id) => { hexMap.set(id, rgbToHex(rgb)) })
+      setPanelColors(hexMap)
+    })
+  }, [design])
+
+  const handleSimStop = useCallback(() => {
+    engineRef.current?.stop()
+    engineRef.current = null
+    setActiveSkillId(null)
+    setPanelColors(new Map())
+  }, [])
+
   const handlePanelRotate = useCallback((id: string) => {
     rotatePanel(id, 30)
   }, [rotatePanel])
@@ -101,29 +144,6 @@ export default function CanvasPage() {
     setRenamingId(null)
     setEditName('')
   }, [])
-
-  const handleAIGenerate = useCallback(async (description: string) => {
-    const result = await api.aiGeneratePanels(description)
-    const newPanels: PlacedPanel[] = result.panels.map(p => ({
-      id: crypto.randomUUID(),
-      type: p.type as PanelType,
-      x: p.x,
-      y: p.y,
-      rotation: p.rotation,
-      color: p.color,
-      snappedTo: null,
-    }))
-
-    replaceAllPanels(newPanels)
-    await api.saveDesign({
-      id: design?.id ?? crypto.randomUUID(),
-      name: design?.name ?? 'AI Generated',
-      panels: newPanels,
-      createdAt: design?.createdAt ?? new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    })
-    await refreshDesigns()
-  }, [design, replaceAllPanels, refreshDesigns])
 
   const selectedColor = design && selectedIds.size > 0
     ? design.panels.find(p => selectedIds.has(p.id))?.color ?? '#cccccc'
@@ -168,14 +188,15 @@ export default function CanvasPage() {
       </Paper>
 
       {/* Right: Canvas area */}
-      <Box sx={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <CanvasToolbar
           toolMode={toolMode}
           onToolChange={setToolMode}
           onDelete={deleteSelected}
           onUndo={undo}
           onExport={handleExport}
-          onGenerateAI={() => setAiDialogOpen(true)}
+          canvasMode={canvasMode}
+          onCanvasModeChange={handleCanvasModeChange}
         />
         <Box sx={{ flex: 1, position: 'relative' }}>
           <CanvasStage
@@ -184,6 +205,9 @@ export default function CanvasPage() {
             selectedIds={selectedIds}
             ghostColor={selectedColor}
             stageRef={stageRef}
+            panelOverrides={panelColors}
+            showConnectionMarks={canvasMode === 'edit'}
+            simMode={canvasMode === 'sim'}
             onPanelClick={handlePanelClick}
             onPanelRotate={handlePanelRotate}
             onPanelDragStart={(id) => {
@@ -262,19 +286,26 @@ export default function CanvasPage() {
             onStageClick={handleStageClick}
             onBlankClick={() => setSelectedIds(new Set())}
           />
-          <ColorPanel
-            selectedCount={selectedIds.size}
-            currentColor={selectedColor}
-            onColorChange={color => updatePanelColor([...selectedIds], color)}
-            visible={selectedIds.size > 0}
-          />
+          {canvasMode === 'edit' && (
+            <ColorPanel
+              selectedCount={selectedIds.size}
+              currentColor={selectedColor}
+              onColorChange={color => updatePanelColor([...selectedIds], color)}
+              visible={selectedIds.size > 0}
+            />
+          )}
         </Box>
       </Box>
-      <CanvasAIDialog
-        open={aiDialogOpen}
-        onClose={() => setAiDialogOpen(false)}
-        onGenerate={handleAIGenerate}
-      />
+      {canvasMode === 'sim' && (
+        <Paper square elevation={0} sx={{ width: 280, borderLeft: 1, borderColor: 'divider', overflow: 'auto' }}>
+          <SimEffectPanel
+            skills={skills}
+            activeSkillId={activeSkillId}
+            onPlay={handleSimPlay}
+            onStop={handleSimStop}
+          />
+        </Paper>
+      )}
     </Box>
   )
 }

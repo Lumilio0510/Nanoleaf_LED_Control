@@ -1,4 +1,5 @@
 import type { EffectEngine, FrameColors, HsbColor, PanelGraphReader } from '../types'
+import { PLUGIN_TICK_MS } from '../types'
 import { hsbToRgb } from '../color-utils'
 
 function seededRandom(seed: number): number {
@@ -17,7 +18,7 @@ export class RandomEngine implements EffectEngine {
 
   getColors(elapsedMs: number, graph: PanelGraphReader): FrameColors {
     const colors: FrameColors = new Map()
-    const intervalMs = this.transTime * 100
+    const intervalMs = this.transTime * PLUGIN_TICK_MS
     const phase = elapsedMs / intervalMs
 
     for (const [id] of graph.nodes) {
@@ -32,4 +33,6 @@ export class RandomEngine implements EffectEngine {
     }
     return colors
   }
+
+  destroy(): void {}
 }
