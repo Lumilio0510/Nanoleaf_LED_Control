@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { api } from '../api'
-import { panelsOverlap } from '../utils/panelGeometry'
+import { panelsOverlap, getWorldVertices } from '../utils/panelGeometry'
 import type { PanelType, PlacedPanel, CanvasDesign, CanvasDesignMeta } from '../../shared/canvas-types'
 
 export function useCanvasDesign() {
   const createDefaultDesign = (): CanvasDesign => {
     const now = new Date().toISOString()
-    return { id: crypto.randomUUID(), name: 'New Design', panels: [], createdAt: now, updatedAt: now }
+    return { id: crypto.randomUUID(), name: 'New Design', description: '', panels: [], createdAt: now, updatedAt: now }
   }
   const [design, setDesign] = useState<CanvasDesign | null>(createDefaultDesign)
   const [designs, setDesigns] = useState<CanvasDesignMeta[]>([])
@@ -77,6 +77,7 @@ export function useCanvasDesign() {
       rotation: 0,
       color: '#cccccc',
       snappedTo: null,
+      vertices: getWorldVertices({ type, x, y, rotation: 0 }),
     }
     if (design.panels.some(p => panelsOverlap(p, newPanel))) return
     pushUndo()

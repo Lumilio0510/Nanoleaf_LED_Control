@@ -183,6 +183,39 @@ async function runWithToolsStream(
   onChunk('（已达到最大操作轮数，如有需要请继续指示）')
   return { content: '（已达到最大操作轮数，如有需要请继续指示）', toolCalls: toolCallRecords }
 }
+/** 将会话消息转换为 LLM API 格式，包含 tool_calls 和 tool 结果 */
+function sessionToLLMMessages(messages: ChatMessage[]): LLMMessage[] {
+  const result: LLMMessage[] = []
+  for (const msg of messages) {
+    if (msg.role === 'user') {
+      result.push({ role: 'user', content: msg.content })
+    } else if (msg.role === 'assistant') {
+      if (msg.toolCalls && msg.toolCalls.length > 0) {
+        result.push({
+          role: 'assistant',
+          content: null,
+          tool_calls: msg.toolCalls.map(tc => ({
+            id: tc.id,
+            type: 'function' as const,
+            function: { name: tc.name, arguments: JSON.stringify(tc.arguments) }
+          }))
+        })
+        for (const tc of msg.toolCalls) {
+          result.push({
+            role: 'tool',
+            content: JSON.stringify(tc.error ? { error: tc.error } : tc.result),
+            tool_call_id: tc.id
+          })
+        }
+      }
+      if (msg.content) {
+        result.push({ role: 'assistant', content: msg.content })
+      }
+    }
+  }
+  return result
+}
+
 // ====== 公开 API ======
 
 export async function chat(sessionId: string, userMessage: string): Promise<ChatMessage> {
@@ -198,7 +231,7 @@ export async function chat(sessionId: string, userMessage: string): Promise<Chat
 
   const llmMessages: LLMMessage[] = [
     { role: 'system', content: buildSystemPrompt() },
-    ...session.messages.map(m => ({ role: m.role === 'assistant' ? 'assistant' as const : 'user' as const, content: m.content }))
+    ...sessionToLLMMessages(session.messages)
   ]
 
   const { content, toolCalls } = await runWithTools(llmMessages)
@@ -235,7 +268,7 @@ export async function chatStream(
 
   const llmMessages: LLMMessage[] = [
     { role: 'system', content: buildSystemPrompt() },
-    ...session.messages.map(m => ({ role: m.role === 'assistant' ? 'assistant' as const : 'user' as const, content: m.content }))
+    ...sessionToLLMMessages(session.messages)
   ]
 
   const { content, toolCalls } = await runWithToolsStream(llmMessages, onChunk)

@@ -1,27 +1,75 @@
 import type { LLMAdapter, ChatMessage, ToolDef, ToolCallResponse } from './types'
 import type { LLMConfig } from '../../shared/types'
 
+/** 去掉消息中的 imageUrls，回退为纯文本 */
+function stripImageUrls(msgs: ChatMessage[]): ChatMessage[] {
+  return msgs.map(m => m.imageUrls ? { ...m, imageUrls: undefined } : m)
+}
+
+/** 检查 400 错误是否因不支持 image_url 导致 */
+function isImageUrlError(errText: string): boolean {
+  return errText.includes('image_url')
+}
+
+/** Convert ChatMessage[] to OpenAI API wire format, handling imageUrls as content parts. */
+function toWireMessages(msgs: ChatMessage[]): Record<string, unknown>[] {
+  return msgs.map(m => {
+    const wire: Record<string, unknown> = { role: m.role }
+    if (m.imageUrls && m.imageUrls.length > 0) {
+      const parts: Record<string, unknown>[] = [{ type: 'text', text: m.content || '' }]
+      for (const url of m.imageUrls) {
+        parts.push({ type: 'image_url', image_url: { url } })
+      }
+      wire.content = parts
+    } else {
+      wire.content = m.content
+    }
+    if (m.tool_call_id) wire.tool_call_id = m.tool_call_id
+    if (m.tool_calls) wire.tool_calls = m.tool_calls
+    return wire
+  })
+}
+
 export const openaiAdapter: LLMAdapter = {
   async chat(messages: ChatMessage[], config: LLMConfig): Promise<string> {
     const url = `${config.baseUrl || 'https://api.openai.com/v1'}/chat/completions`
-    const res = await fetch(url, {
+    const doFetch = (msgs: ChatMessage[]) => fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${config.apiKey}` },
-      body: JSON.stringify({ model: config.model || 'gpt-4o', messages, temperature: 0.7 })
+      body: JSON.stringify({ model: config.model || 'gpt-4o', messages: toWireMessages(msgs), temperature: 0.7 })
     })
-    if (!res.ok) throw new Error(`OpenAI API 错误: ${res.status} ${await res.text()}`)
+    let res = await doFetch(messages)
+    if (!res.ok) {
+      const errText = await res.text()
+      // 模型不支持 image_url 时，去掉图片重试
+      if (res.status === 400 && isImageUrlError(errText) && messages.some(m => m.imageUrls)) {
+        console.warn('[openai] model does not support image_url, retrying without images')
+        res = await doFetch(stripImageUrls(messages))
+      } else {
+        throw new Error(`OpenAI API 错误: ${res.status} ${errText}`)
+      }
+    }
     const data = await res.json() as { choices: { message: { content: string } }[] }
     return data.choices[0].message.content
   },
 
   async chatStream(messages: ChatMessage[], config: LLMConfig, onChunk: (chunk: string) => void): Promise<string> {
     const url = `${config.baseUrl || 'https://api.openai.com/v1'}/chat/completions`
-    const res = await fetch(url, {
+    const doFetch = (msgs: ChatMessage[]) => fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${config.apiKey}` },
-      body: JSON.stringify({ model: config.model || 'gpt-4o', messages, temperature: 0.7, stream: true })
+      body: JSON.stringify({ model: config.model || 'gpt-4o', messages: toWireMessages(msgs), temperature: 0.7, stream: true })
     })
-    if (!res.ok) throw new Error(`OpenAI API 错误: ${res.status}`)
+    let res = await doFetch(messages)
+    if (!res.ok) {
+      const errText = await res.text()
+      if (res.status === 400 && isImageUrlError(errText) && messages.some(m => m.imageUrls)) {
+        console.warn('[openai] model does not support image_url, retrying without images')
+        res = await doFetch(stripImageUrls(messages))
+      } else {
+        throw new Error(`OpenAI API 错误: ${res.status} ${errText}`)
+      }
+    }
     const reader = res.body!.getReader()
     const decoder = new TextDecoder()
     let full = ''
@@ -44,19 +92,30 @@ export const openaiAdapter: LLMAdapter = {
 
   async chatWithTools(messages: ChatMessage[], tools: ToolDef[], config: LLMConfig): Promise<ToolCallResponse> {
     const url = `${config.baseUrl || 'https://api.openai.com/v1'}/chat/completions`
-    const body: Record<string, unknown> = {
-      model: config.model || 'gpt-4o',
-      messages,
-      temperature: 0.7,
-      tools: tools.map(t => ({ type: 'function', function: t })),
-      tool_choice: 'auto'
+    const doFetch = (msgs: ChatMessage[]) => {
+      const body: Record<string, unknown> = {
+        model: config.model || 'gpt-4o',
+        messages: toWireMessages(msgs),
+        temperature: 0.7,
+        tools: tools.map(t => ({ type: 'function', function: t })),
+        tool_choice: 'auto'
+      }
+      return fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${config.apiKey}` },
+        body: JSON.stringify(body)
+      })
     }
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${config.apiKey}` },
-      body: JSON.stringify(body)
-    })
-    if (!res.ok) throw new Error(`OpenAI API 错误: ${res.status} ${await res.text()}`)
+    let res = await doFetch(messages)
+    if (!res.ok) {
+      const errText = await res.text()
+      if (res.status === 400 && isImageUrlError(errText) && messages.some(m => m.imageUrls)) {
+        console.warn('[openai] model does not support image_url, retrying without images')
+        res = await doFetch(stripImageUrls(messages))
+      } else {
+        throw new Error(`OpenAI API 错误: ${res.status} ${errText}`)
+      }
+    }
     const data = await res.json() as {
       choices: { finish_reason: string; message: { content: string | null; reasoning_content?: string; tool_calls?: { id: string; function: { name: string; arguments: string } }[] } }[]
     }
@@ -83,19 +142,28 @@ export const openaiAdapter: LLMAdapter = {
     onChunk: (chunk: string) => void,
   ): Promise<ToolCallResponse> {
     const url = `${config.baseUrl || 'https://api.openai.com/v1'}/chat/completions`
-    const res = await fetch(url, {
+    const doFetch = (msgs: ChatMessage[], stream: boolean) => fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${config.apiKey}` },
       body: JSON.stringify({
         model: config.model || 'gpt-4o',
-        messages,
+        messages: toWireMessages(msgs),
         temperature: 0.7,
         tools: tools.map(t => ({ type: 'function', function: t })),
         tool_choice: 'auto',
-        stream: true,
+        stream,
       }),
     })
-    if (!res.ok) throw new Error(`OpenAI API 错误: ${res.status}`)
+    let res = await doFetch(messages, true)
+    if (!res.ok) {
+      const errText = await res.text()
+      if (res.status === 400 && isImageUrlError(errText) && messages.some(m => m.imageUrls)) {
+        console.warn('[openai] model does not support image_url, retrying without images')
+        res = await doFetch(stripImageUrls(messages), true)
+      } else {
+        throw new Error(`OpenAI API 错误: ${res.status} ${errText}`)
+      }
+    }
 
     const reader = res.body!.getReader()
     const decoder = new TextDecoder()
@@ -150,7 +218,7 @@ export const openaiAdapter: LLMAdapter = {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${config.apiKey}` },
             body: JSON.stringify({
               model: config.model || 'gpt-4o',
-              messages,
+              messages: toWireMessages(messages),
               temperature: 0.7,
               tools: tools.map(t => ({ type: 'function', function: t })),
               tool_choice: 'auto',

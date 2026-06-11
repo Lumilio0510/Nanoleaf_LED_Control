@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlink
 import { join, resolve } from 'path'
 import { randomUUID } from 'crypto'
 import type { CanvasDesign, CanvasDesignMeta } from '../shared/canvas-types'
+import { getWorldVertices } from '../shared/panelGeometry'
 
 function getDesignsDir(): string {
   const dir = resolve(process.cwd(), 'designs')
@@ -20,11 +21,26 @@ export function listDesigns(): CanvasDesignMeta[] {
 export function loadDesign(id: string): CanvasDesign | null {
   const fp = join(getDesignsDir(), `${id}.json`)
   if (!existsSync(fp)) return null
-  return JSON.parse(readFileSync(fp, 'utf-8'))
+  const design: CanvasDesign = JSON.parse(readFileSync(fp, 'utf-8'))
+  // Ensure all panels have vertices (backward compat with old files)
+  design.panels = design.panels.map(p => ({
+    ...p,
+    vertices: p.vertices && p.vertices.length > 0 ? p.vertices : getWorldVertices(p),
+  }))
+  // Ensure description exists (backward compat)
+  if (!design.description) {
+    design.description = design.name
+  }
+  return design
 }
 
 export function saveDesign(design: CanvasDesign): CanvasDesignMeta {
   design.updatedAt = new Date().toISOString()
+  // Compute world-space vertices for all panels
+  design.panels = design.panels.map(p => ({
+    ...p,
+    vertices: getWorldVertices(p),
+  }))
   writeFileSync(join(getDesignsDir(), `${design.id}.json`), JSON.stringify(design, null, 2), 'utf-8')
   return { id: design.id, name: design.name, updatedAt: design.updatedAt }
 }
@@ -42,5 +58,5 @@ export function deleteDesign(id: string): void {
 }
 
 export function createDesign(name: string): CanvasDesign {
-  return { id: randomUUID(), name, panels: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+  return { id: randomUUID(), name, description: name, panels: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
 }

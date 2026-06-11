@@ -15,9 +15,10 @@ import CanvasStage from './CanvasStage'
 import ColorPanel from './ColorPanel'
 import { useCanvasDesign } from '../hooks/useCanvasDesign'
 import { panelsOverlap, findBestSnap } from '../utils/panelGeometry'
-import type { SnappedTo } from '../../shared/canvas-types'
+import type { CanvasDesign, SnappedTo } from '../../shared/canvas-types'
 import { api } from '../api'
 import SimEffectPanel from './SimEffectPanel'
+import CanvasAIDialog from './CanvasAIDialog'
 import { useSkills } from '../hooks/useSkills'
 import { SimulationEngine } from '../simulation/SimulationEngine'
 import { rgbToHex } from '../simulation/color-utils'
@@ -37,6 +38,7 @@ export default function CanvasPage() {
     addPanel, movePanelEnd, batchUpdatePanels, updatePanelColor, deleteSelected, rotatePanel, selectAll, undo,
   } = useCanvasDesign()
   const [canvasMode, setCanvasMode] = useState<'edit' | 'sim'>('edit')
+  const [aiDialogOpen, setAiDialogOpen] = useState(false)
   const [activeSkillId, setActiveSkillId] = useState<string | null>(null)
   const [panelColors, setPanelColors] = useState<Map<string, string>>(new Map())
   const engineRef = useRef<SimulationEngine | null>(null)
@@ -114,6 +116,12 @@ export default function CanvasPage() {
       setPanelColors(hexMap)
     })
   }, [design])
+
+  const handleAIGenerated = useCallback(async (design: CanvasDesign) => {
+    await api.saveDesign(design)
+    await refreshDesigns()
+    loadDesign(design.id)
+  }, [refreshDesigns, loadDesign])
 
   const handleSimStop = useCallback(() => {
     engineRef.current?.stop()
@@ -195,6 +203,7 @@ export default function CanvasPage() {
           onDelete={deleteSelected}
           onUndo={undo}
           onExport={handleExport}
+          onAIGenerate={() => setAiDialogOpen(true)}
           canvasMode={canvasMode}
           onCanvasModeChange={handleCanvasModeChange}
         />
@@ -306,6 +315,11 @@ export default function CanvasPage() {
           />
         </Paper>
       )}
+      <CanvasAIDialog
+        open={aiDialogOpen}
+        onClose={() => setAiDialogOpen(false)}
+        onGenerated={handleAIGenerated}
+      />
     </Box>
   )
 }

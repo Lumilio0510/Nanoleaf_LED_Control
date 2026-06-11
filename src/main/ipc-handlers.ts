@@ -8,6 +8,7 @@ import * as skillService from './skill.service'
 import { executeSkill } from './skill-executor'
 import * as agentService from './agent.service'
 import * as designService from './design.service'
+import { generateDesignIterative, generateDesignAgentic, type GenProgress } from './canvas-agent.service'
 import { readJSON, writeJSON } from './storage'
 import { rgbToHsb } from './color-converter'
 import type { LLMConfig } from '../shared/types'
@@ -194,6 +195,22 @@ export function registerHandlers() {
 
   ipcMain.handle(IPC.CHAT_SESSION_DELETE, async (_event, id: string) => {
     agentService.deleteSession(id)
+  })
+
+  ipcMain.handle(IPC.DESIGN_AI_GENERATE, async (event, description: string, imageBase64?: string) => {
+    try {
+      return await generateDesignAgentic(description, (progress: GenProgress) => {
+        event.sender.send(IPC.DESIGN_AI_GENERATE_PROGRESS, progress)
+      }, imageBase64)
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e)
+      if (msg.includes('Ollama') || msg.includes('tool calling')) {
+        return generateDesignIterative(description, (progress: GenProgress) => {
+          event.sender.send(IPC.DESIGN_AI_GENERATE_PROGRESS, progress)
+        }, imageBase64)
+      }
+      throw e
+    }
   })
 
   // ======== 设置 ========

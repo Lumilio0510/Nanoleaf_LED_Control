@@ -9,7 +9,21 @@
       "y": 20.03403207333531,
       "rotation": 0,
       "color": "#cccccc",
-      "snappedTo": null
+      "snappedTo": null,
+      "vertices": [
+        {
+          "x": 174.91,
+          "y": -57.33
+        },
+        {
+          "x": 241.91,
+          "y": 58.72
+        },
+        {
+          "x": 107.91,
+          "y": 58.72
+        }
+      ]
     },
     {
       "id": "cf22e2f3-31b7-418a-80de-1df1c02f9a77",
@@ -21,7 +35,21 @@
       "snappedTo": {
         "panelId": "d6df3e81-29ee-454d-a4fa-4728e80b8b82",
         "connectionIndex": 3
-      }
+      },
+      "vertices": [
+        {
+          "x": 241.91,
+          "y": 58.72
+        },
+        {
+          "x": 174.91,
+          "y": 174.76
+        },
+        {
+          "x": 107.91,
+          "y": 58.72
+        }
+      ]
     },
     {
       "id": "8babddbc-ad62-4d68-bf0f-1d1b634ec700",
@@ -33,7 +61,21 @@
       "snappedTo": {
         "panelId": "cf22e2f3-31b7-418a-80de-1df1c02f9a77",
         "connectionIndex": 3
-      }
+      },
+      "vertices": [
+        {
+          "x": 107.91,
+          "y": 58.72
+        },
+        {
+          "x": 174.91,
+          "y": 174.76
+        },
+        {
+          "x": 40.91,
+          "y": 174.76
+        }
+      ]
     },
     {
       "id": "0cca89fc-e127-4d8d-b859-b20b543bf1a2",
@@ -45,7 +87,21 @@
       "snappedTo": {
         "panelId": "cf22e2f3-31b7-418a-80de-1df1c02f9a77",
         "connectionIndex": 1
-      }
+      },
+      "vertices": [
+        {
+          "x": 241.91,
+          "y": 58.72
+        },
+        {
+          "x": 308.91,
+          "y": 174.76
+        },
+        {
+          "x": 174.91,
+          "y": 174.76
+        }
+      ]
     },
     {
       "id": "ee8d0a9a-924a-4fec-b4f3-b9ca08e0758d",
@@ -57,7 +113,21 @@
       "snappedTo": {
         "panelId": "0cca89fc-e127-4d8d-b859-b20b543bf1a2",
         "connectionIndex": 1
-      }
+      },
+      "vertices": [
+        {
+          "x": 375.91,
+          "y": 58.72
+        },
+        {
+          "x": 308.91,
+          "y": 174.76
+        },
+        {
+          "x": 241.91,
+          "y": 58.72
+        }
+      ]
     },
     {
       "id": "1e0674b5-6cd8-407e-b135-d2a148c55f16",
@@ -69,7 +139,21 @@
       "snappedTo": {
         "panelId": "8babddbc-ad62-4d68-bf0f-1d1b634ec700",
         "connectionIndex": 3
-      }
+      },
+      "vertices": [
+        {
+          "x": 174.91,
+          "y": 174.76
+        },
+        {
+          "x": 107.91,
+          "y": 290.81
+        },
+        {
+          "x": 40.91,
+          "y": 174.76
+        }
+      ]
     },
     {
       "id": "caca7bbd-9964-417d-985c-c0a12c5f6667",
@@ -81,7 +165,21 @@
       "snappedTo": {
         "panelId": "1e0674b5-6cd8-407e-b135-d2a148c55f16",
         "connectionIndex": 2
-      }
+      },
+      "vertices": [
+        {
+          "x": 40.91,
+          "y": 174.76
+        },
+        {
+          "x": 107.91,
+          "y": 290.81
+        },
+        {
+          "x": -26.09,
+          "y": 290.81
+        }
+      ]
     },
     {
       "id": "f37efc68-8e05-4ed8-aeee-eb2e57505191",
@@ -90,7 +188,21 @@
       "y": 95.05056435202312,
       "rotation": 60,
       "color": "#cccccc",
-      "snappedTo": null
+      "snappedTo": null,
+      "vertices": [
+        {
+          "x": 77.58,
+          "y": 56.37
+        },
+        {
+          "x": 10.58,
+          "y": 172.42
+        },
+        {
+          "x": -56.42,
+          "y": 56.37
+        }
+      ]
     },
     {
       "id": "d295dbc4-5cdc-4764-9add-edd1e83abfc6",
@@ -99,7 +211,21 @@
       "y": 96.24192721127162,
       "rotation": 60,
       "color": "#cccccc",
-      "snappedTo": null
+      "snappedTo": null,
+      "vertices": [
+        {
+          "x": 602.63,
+          "y": 57.56
+        },
+        {
+          "x": 535.63,
+          "y": 173.61
+        },
+        {
+          "x": 468.63,
+          "y": 57.56
+        }
+      ]
     },
     {
       "id": "e2c4daca-6565-429e-8ab9-0e2f988a1e07",
@@ -111,7 +237,21 @@
       "snappedTo": {
         "panelId": "d295dbc4-5cdc-4764-9add-edd1e83abfc6",
         "connectionIndex": 1
-      }
+      },
+      "vertices": [
+        {
+          "x": 602.63,
+          "y": 57.56
+        },
+        {
+          "x": 669.63,
+          "y": 173.61
+        },
+        {
+          "x": 535.63,
+          "y": 173.61
+        }
+      ]
     },
     {
       "id": "524fbd7b-2ddb-4e58-a2d6-38f7db44d55f",
@@ -123,7 +263,21 @@
       "snappedTo": {
         "panelId": "e2c4daca-6565-429e-8ab9-0e2f988a1e07",
         "connectionIndex": 1
-      }
+      },
+      "vertices": [
+        {
+          "x": 736.63,
+          "y": 57.56
+        },
+        {
+          "x": 669.63,
+          "y": 173.61
+        },
+        {
+          "x": 602.63,
+          "y": 57.56
+        }
+      ]
     },
     {
       "id": "21d0d2bd-b4e1-4980-a223-9eaa8ec1a744",
@@ -135,7 +289,21 @@
       "snappedTo": {
         "panelId": "524fbd7b-2ddb-4e58-a2d6-38f7db44d55f",
         "connectionIndex": 1
-      }
+      },
+      "vertices": [
+        {
+          "x": 736.63,
+          "y": 57.56
+        },
+        {
+          "x": 803.63,
+          "y": 173.61
+        },
+        {
+          "x": 669.63,
+          "y": 173.61
+        }
+      ]
     },
     {
       "id": "a3248d85-1481-4458-bd7f-62a4a2b82e3b",
@@ -144,7 +312,21 @@
       "y": 91.16140086874259,
       "rotation": 60,
       "color": "#cccccc",
-      "snappedTo": null
+      "snappedTo": null,
+      "vertices": [
+        {
+          "x": 904.07,
+          "y": 52.48
+        },
+        {
+          "x": 837.07,
+          "y": 168.53
+        },
+        {
+          "x": 770.07,
+          "y": 52.48
+        }
+      ]
     },
     {
       "id": "d66098e0-bee4-4f82-a0dd-ba27de1abffd",
@@ -156,7 +338,21 @@
       "snappedTo": {
         "panelId": "524fbd7b-2ddb-4e58-a2d6-38f7db44d55f",
         "connectionIndex": 5
-      }
+      },
+      "vertices": [
+        {
+          "x": 669.63,
+          "y": -58.49
+        },
+        {
+          "x": 736.63,
+          "y": 57.56
+        },
+        {
+          "x": 602.63,
+          "y": 57.56
+        }
+      ]
     },
     {
       "id": "c41d68f3-da20-4faf-a0ca-a9a7104ead97",
@@ -168,7 +364,21 @@
       "snappedTo": {
         "panelId": "21d0d2bd-b4e1-4980-a223-9eaa8ec1a744",
         "connectionIndex": 3
-      }
+      },
+      "vertices": [
+        {
+          "x": 736.63,
+          "y": 289.65
+        },
+        {
+          "x": 669.63,
+          "y": 173.61
+        },
+        {
+          "x": 803.63,
+          "y": 173.61
+        }
+      ]
     },
     {
       "id": "3b0e1909-0af1-4b1b-badf-c1054b5d3a9d",
@@ -180,9 +390,24 @@
       "snappedTo": {
         "panelId": "c41d68f3-da20-4faf-a0ca-a9a7104ead97",
         "connectionIndex": 5
-      }
+      },
+      "vertices": [
+        {
+          "x": 803.63,
+          "y": 173.61
+        },
+        {
+          "x": 870.63,
+          "y": 289.65
+        },
+        {
+          "x": 736.63,
+          "y": 289.65
+        }
+      ]
     }
   ],
   "createdAt": "2026-06-02T01:36:56.207Z",
-  "updatedAt": "2026-06-04T03:03:13.127Z"
+  "updatedAt": "2026-06-04T03:03:13.127Z",
+  "description": "图案由 14 块全等正三角分为左右镜像两组构成，定名极光之翼，两组造型如相向舒展的双翼，零散三角似飘散的极光碎羽"
 }

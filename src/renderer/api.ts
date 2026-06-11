@@ -52,6 +52,8 @@ declare global {
       deleteDesign: (id: string) => Promise<void>
       exportDesignImage: (dataUrl: string) => Promise<string | null>
       renameDesign: (id: string, newName: string) => Promise<{ id: string; name: string; updatedAt: string }>
+      aiGenerateDesign: (description: string, imageBase64?: string) => Promise<CanvasDesign>
+      onAiGenerateProgress: (cb: (progress: unknown) => void) => () => void
     }
   }
 }
@@ -104,4 +106,6 @@ export const api = {
   deleteDesign: (id: string) => window.electronAPI.deleteDesign(id),
   exportDesignImage: (dataUrl: string) => window.electronAPI.exportDesignImage(dataUrl),
   renameDesign: (id: string, newName: string) => window.electronAPI.renameDesign(id, newName),
+  aiGenerateDesign: (description: string, imageBase64?: string) => window.electronAPI.aiGenerateDesign(description, imageBase64) as Promise<CanvasDesign>,
+  onAiGenerateProgress: (cb: (progress: unknown) => void) => window.electronAPI.onAiGenerateProgress(cb),
 }

@@ -6,6 +6,8 @@ export interface ChatMessage {
   tool_call_id?: string
   tool_calls?: { id: string; type: 'function'; function: { name: string; arguments: string } }[]
   reasoning_content?: string
+  /** Base64 data-URL images, e.g. "data:image/jpeg;base64,..." */
+  imageUrls?: string[]
 }
 
 export interface ToolDef {

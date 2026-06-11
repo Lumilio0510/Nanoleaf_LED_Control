@@ -78,7 +78,7 @@ export default function CanvasStage({
 
   const ghostOverlaps = useMemo(() => {
     if (!ghostPos || toolMode === 'select' || !design) return false
-    const ghost: PlacedPanel = { id: '__check__', type: toolMode as PanelType, x: ghostPos.x, y: ghostPos.y, rotation: 0, color: '', snappedTo: null }
+    const ghost: PlacedPanel = { id: '__check__', type: toolMode as PanelType, x: ghostPos.x, y: ghostPos.y, rotation: 0, color: '', snappedTo: null, vertices: [] }
     return design.panels.some(p => panelsOverlap(p, ghost))
   }, [ghostPos, toolMode, design])
 
@@ -95,7 +95,7 @@ export default function CanvasStage({
       if (e.target === e.target.getStage()) {
         const p = getPos()
         if (design) {
-          const ghost: PlacedPanel = { id: '__check__', type: toolMode as PanelType, x: p.x, y: p.y, rotation: 0, color: '', snappedTo: null }
+          const ghost: PlacedPanel = { id: '__check__', type: toolMode as PanelType, x: p.x, y: p.y, rotation: 0, color: '', snappedTo: null, vertices: [] }
           if (!design.panels.some(existing => panelsOverlap(existing, ghost))) {
             onStageClick(p.x, p.y)
           }
@@ -220,7 +220,7 @@ export default function CanvasStage({
           ))}
           {ghostPos && toolMode !== 'select' && (
             <CanvasShapePanel
-              panel={{ id: '__ghost__', type: toolMode as PanelType, x: ghostPos.x, y: ghostPos.y, rotation: 0, color: ghostOverlaps ? '#ef4444' : ghostColor, snappedTo: null }}
+              panel={{ id: '__ghost__', type: toolMode as PanelType, x: ghostPos.x, y: ghostPos.y, rotation: 0, color: ghostOverlaps ? '#ef4444' : ghostColor, snappedTo: null, vertices: [] }}
               isSelected={false} isGhost
             />
           )}

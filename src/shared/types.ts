@@ -51,6 +51,7 @@ export const IPC = {
   DESIGN_RENAME: 'design:rename',
   DESIGN_EXPORT: 'design:export',
   DESIGN_AI_GENERATE: 'design:aiGenerate',
+  DESIGN_AI_GENERATE_PROGRESS: 'design:aiGenerateProgress',
 
   // 聊天历史
   CHAT_SESSION_LIST: 'chat:sessionList',

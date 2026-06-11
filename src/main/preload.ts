@@ -77,6 +77,12 @@ const api = {
   deleteDesign: (id: string): Promise<void> => ipcRenderer.invoke(IPC.DESIGN_DELETE, id),
   renameDesign: (id: string, newName: string): Promise<{ id: string; name: string; updatedAt: string }> => ipcRenderer.invoke(IPC.DESIGN_RENAME, id, newName),
   exportDesignImage: (dataUrl: string): Promise<string | null> => ipcRenderer.invoke(IPC.DESIGN_EXPORT, dataUrl),
+  aiGenerateDesign: (description: string, imageBase64?: string): Promise<unknown> => ipcRenderer.invoke(IPC.DESIGN_AI_GENERATE, description, imageBase64),
+  onAiGenerateProgress: (cb: (progress: unknown) => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, progress: unknown) => cb(progress)
+    ipcRenderer.on(IPC.DESIGN_AI_GENERATE_PROGRESS, listener)
+    return () => { ipcRenderer.removeListener(IPC.DESIGN_AI_GENERATE_PROGRESS, listener) }
+  },
 
   // ======== 设置 ========
   getSettings: (): Promise<Record<string, unknown>> => ipcRenderer.invoke(IPC.SETTINGS_GET),

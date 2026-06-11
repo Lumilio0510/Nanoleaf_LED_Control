@@ -7,6 +7,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import UndoIcon from '@mui/icons-material/Undo'
 import ImageIcon from '@mui/icons-material/Image'
 import NearMeIcon from '@mui/icons-material/NearMe'
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'
 import EditIcon from '@mui/icons-material/Edit'
 import PlayCircleIcon from '@mui/icons-material/PlayCircle'
 
@@ -19,12 +20,13 @@ interface Props {
   onDelete: () => void
   onUndo: () => void
   onExport: () => void
+  onAIGenerate: () => void
   canvasMode: CanvasMode
   onCanvasModeChange: (m: CanvasMode) => void
 }
 
 export default function CanvasToolbar({
-  toolMode, onToolChange, onDelete, onUndo, onExport,
+  toolMode, onToolChange, onDelete, onUndo, onExport, onAIGenerate,
   canvasMode, onCanvasModeChange,
 }: Props) {
   return (
@@ -46,6 +48,8 @@ export default function CanvasToolbar({
           </ToggleButtonGroup>
           <Tooltip title="删除选中 (Delete)"><IconButton size="small" onClick={onDelete}><DeleteIcon fontSize="small" /></IconButton></Tooltip>
           <Tooltip title="撤销 (Ctrl+Z)"><IconButton size="small" onClick={onUndo}><UndoIcon fontSize="small" /></IconButton></Tooltip>
+          <Paper elevation={0} sx={{ width: 1, height: 24, bgcolor: 'divider', mx: 0.5 }} />
+          <Tooltip title="AI 生成图案"><IconButton size="small" onClick={onAIGenerate} color="primary"><AutoAwesomeIcon fontSize="small" /></IconButton></Tooltip>
         </>
       )}
       <Tooltip title="导出图片"><IconButton size="small" onClick={onExport}><ImageIcon fontSize="small" /></IconButton></Tooltip>
