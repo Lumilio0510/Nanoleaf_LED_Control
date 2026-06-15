@@ -14,7 +14,7 @@ import CanvasToolbar from './CanvasToolbar'
 import CanvasStage from './CanvasStage'
 import ColorPanel from './ColorPanel'
 import { useCanvasDesign } from '../hooks/useCanvasDesign'
-import { panelsOverlap, findBestSnap } from '../utils/panelGeometry'
+import { findSnapCandidates } from '../utils/panelGeometry'
 import type { CanvasDesign, SnappedTo } from '../../shared/canvas-types'
 import { api } from '../api'
 import SimEffectPanel from './SimEffectPanel'
@@ -35,16 +35,20 @@ export default function CanvasPage() {
   const {
     design, designs, toolMode, selectedIds, setToolMode, setSelectedIds,
     refreshDesigns, newDesign, loadDesign, saveDesign, deleteDesign, renameDesign,
-    addPanel, movePanelEnd, batchUpdatePanels, updatePanelColor, deleteSelected, rotatePanel, selectAll, undo,
+    addPanel, movePanelEnd, batchUpdatePanels, updatePanelColor, deleteSelected, duplicateSelected, rotatePanel, selectAll, undo,
   } = useCanvasDesign()
   const [canvasMode, setCanvasMode] = useState<'edit' | 'sim'>('edit')
   const [aiDialogOpen, setAiDialogOpen] = useState(false)
   const [activeSkillId, setActiveSkillId] = useState<string | null>(null)
   const [panelColors, setPanelColors] = useState<Map<string, string>>(new Map())
+  const [pickingColorFromPanel, setPickingColorFromPanel] = useState(false)
   const engineRef = useRef<SimulationEngine | null>(null)
   const { skills } = useSkills()
 
   useEffect(() => { refreshDesigns() }, [refreshDesigns])
+  useEffect(() => {
+    if (selectedIds.size === 0) setPickingColorFromPanel(false)
+  }, [selectedIds])
 
   // Cleanup engine on unmount
   useEffect(() => { return () => { engineRef.current?.stop() } }, [])
@@ -57,6 +61,7 @@ export default function CanvasPage() {
       if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo() }
       if (e.ctrlKey && e.key === 'a') { e.preventDefault(); selectAll() }
       if (e.ctrlKey && e.key === 's') { e.preventDefault(); saveDesign() }
+      if (e.ctrlKey && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicateSelected() }
       if (e.key === 'Tab') { e.preventDefault(); setCanvasMode(m => m === 'edit' ? 'sim' : 'edit') }
       if (e.key === 'v' || e.key === 'V') setToolMode('select')
       if (e.key === '1') setToolMode('hexagon')
@@ -69,7 +74,7 @@ export default function CanvasPage() {
     }
     window.addEventListener('keydown', h)
     return () => window.removeEventListener('keydown', h)
-  }, [deleteSelected, undo, selectAll, saveDesign, setToolMode])
+  }, [deleteSelected, duplicateSelected, undo, selectAll, saveDesign, setToolMode])
 
   const handleStageClick = useCallback((x: number, y: number) => {
     if (toolMode !== 'select') {
@@ -79,13 +84,22 @@ export default function CanvasPage() {
   }, [toolMode, addPanel, setToolMode])
 
   const handlePanelClick = useCallback((id: string, shiftKey: boolean) => {
+    if (pickingColorFromPanel) {
+      if (!design || selectedIds.size === 0) return
+      const source = design.panels.find(p => p.id === id)
+      if (!source) return
+      updatePanelColor([...selectedIds], source.color)
+      setPickingColorFromPanel(false)
+      return
+    }
+
     setSelectedIds(prev => {
       const next = new Set(prev)
       if (shiftKey) { next.has(id) ? next.delete(id) : next.add(id) }
       else { next.clear(); next.add(id) }
       return next
     })
-  }, [setSelectedIds])
+  }, [design, pickingColorFromPanel, selectedIds, setSelectedIds, updatePanelColor])
 
   const handleExport = useCallback(async () => {
     const stage = stageRef.current
@@ -201,6 +215,7 @@ export default function CanvasPage() {
           toolMode={toolMode}
           onToolChange={setToolMode}
           onDelete={deleteSelected}
+          onDuplicate={duplicateSelected}
           onUndo={undo}
           onExport={handleExport}
           onAIGenerate={() => setAiDialogOpen(true)}
@@ -230,46 +245,39 @@ export default function CanvasPage() {
               const panel = design.panels.find(p => p.id === id)
               if (!panel) return null
 
-              const trySnap = findBestSnap(
+              const snapCandidates = findSnapCandidates(
                 { type: panel.type, x, y, rotation: panel.rotation },
                 design.panels,
                 new Set([id]),
                 SNAP_THRESHOLD,
               )
 
-              if (trySnap) {
-                const snappedCheck = { ...panel, x: trySnap.snapX, y: trySnap.snapY }
-                const overlapsOther = design.panels.some(
-                  p => p.id !== id && panelsOverlap(p, snappedCheck),
-                )
-                if (!overlapsOther) {
-                  const newSnappedTo: SnappedTo = {
-                    panelId: trySnap.targetPanelId,
-                    connectionIndex: trySnap.targetConnectionIndex,
-                  }
-                  const snappedUpdates: Record<string, SnappedTo | null> = { [id]: newSnappedTo }
-                  for (const p of design.panels) {
-                    if (p.id !== id && p.snappedTo?.panelId === id) {
-                      snappedUpdates[p.id] = null
-                    }
-                  }
-                  batchUpdatePanels(panels =>
-                    panels.map(p => {
-                      const su = snappedUpdates[p.id]
-                      return su !== undefined
-                        ? { ...p, x: p.id === id ? trySnap.snapX : p.x, y: p.id === id ? trySnap.snapY : p.y, snappedTo: su }
-                        : p.id === id
-                          ? { ...p, x: trySnap.snapX, y: trySnap.snapY }
-                          : p
-                    }),
-                  )
-                  return { x: trySnap.snapX, y: trySnap.snapY }
+              for (const trySnap of snapCandidates) {
+                const newSnappedTo: SnappedTo = {
+                  panelId: trySnap.targetPanelId,
+                  connectionIndex: trySnap.targetConnectionIndex,
                 }
+                const snappedUpdates: Record<string, SnappedTo | null> = { [id]: newSnappedTo }
+                for (const p of design.panels) {
+                  if (p.id !== id && p.snappedTo?.panelId === id) {
+                    snappedUpdates[p.id] = null
+                  }
+                }
+                batchUpdatePanels(panels =>
+                  panels.map(p => {
+                    const su = snappedUpdates[p.id]
+                    return su !== undefined
+                      ? { ...p, x: p.id === id ? trySnap.snapX : p.x, y: p.id === id ? trySnap.snapY : p.y, snappedTo: su }
+                      : p.id === id
+                        ? { ...p, x: trySnap.snapX, y: trySnap.snapY }
+                        : p
+                  }),
+                )
+                return { x: trySnap.snapX, y: trySnap.snapY }
               }
 
               // No snap — standard overlap check
-              const moved = { ...panel, x, y }
-              if (!design.panels.some(p => p.id !== id && panelsOverlap(p, moved))) {
+              {
                 const snappedUpdates: Record<string, SnappedTo | null> = {}
                 if (panel.snappedTo) snappedUpdates[id] = null
                 for (const p of design.panels) {
@@ -281,7 +289,11 @@ export default function CanvasPage() {
                   batchUpdatePanels(panels =>
                     panels.map(p => {
                       const su = snappedUpdates[p.id]
-                      return su !== undefined ? { ...p, snappedTo: su } : p
+                      return p.id === id
+                        ? { ...p, x, y, snappedTo: su !== undefined ? su : p.snappedTo }
+                        : su !== undefined
+                          ? { ...p, snappedTo: su }
+                          : p
                     }),
                   )
                 } else {
@@ -289,8 +301,6 @@ export default function CanvasPage() {
                 }
                 return { x, y }
               }
-
-              return null
             }}
             onStageClick={handleStageClick}
             onBlankClick={() => setSelectedIds(new Set())}
@@ -299,7 +309,13 @@ export default function CanvasPage() {
             <ColorPanel
               selectedCount={selectedIds.size}
               currentColor={selectedColor}
-              onColorChange={color => updatePanelColor([...selectedIds], color)}
+              onColorChange={color => {
+                setPickingColorFromPanel(false)
+                updatePanelColor([...selectedIds], color)
+              }}
+              onPickFromPanel={() => setPickingColorFromPanel(true)}
+              onCancelPick={() => setPickingColorFromPanel(false)}
+              pickingFromPanel={pickingColorFromPanel}
               visible={selectedIds.size > 0}
             />
           )}

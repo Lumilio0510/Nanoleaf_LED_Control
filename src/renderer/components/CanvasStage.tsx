@@ -1,10 +1,10 @@
-import { useRef, useState, useCallback, useEffect, useMemo } from 'react'
-import { Stage, Layer, Rect, Line } from 'react-konva'
+import { useRef, useState, useCallback, useEffect } from 'react'
+import { Stage, Layer, Rect, Circle } from 'react-konva'
 import type Konva from 'konva'
 import CanvasGrid from './CanvasGrid'
 import CanvasShapePanel from './CanvasShapePanel'
-import { panelsOverlap, findBestSnap, connectionToEdgeIndices, getPanelGeometry, getConnectionWorldPos } from '../utils/panelGeometry'
-import type { PanelType, PlacedPanel, CanvasDesign } from '../../shared/canvas-types'
+import { findBestSnap, getSnapPointWorldPos } from '../utils/panelGeometry'
+import type { PanelType, CanvasDesign } from '../../shared/canvas-types'
 
 interface Props {
   design: CanvasDesign | null
@@ -25,9 +25,9 @@ interface Props {
 
 interface SnapHighlight {
   draggedId: string
-  draggedEdgeIndices: number[]
+  draggedPointIndex: number
   targetId: string
-  targetEdgeIndices: number[]
+  targetPointIndex: number
 }
 
 export default function CanvasStage({
@@ -43,7 +43,10 @@ export default function CanvasStage({
   const [offset, setOffset] = useState({ x: 0, y: 0 })
   const [ghostPos, setGhostPos] = useState<{ x: number; y: number } | null>(null)
   const [snapHighlight, setSnapHighlight] = useState<SnapHighlight | null>(null)
+  const [isPanning, setIsPanning] = useState(false)
   const panning = useRef(false)
+  const blankSelectPan = useRef(false)
+  const panMoved = useRef(false)
   const lastP = useRef({ x: 0, y: 0 })
   const spaceHeld = useRef(false)
   /** Track the last snap key to avoid redundant re-renders during drag */
@@ -76,38 +79,50 @@ export default function CanvasStage({
     setOffset({ x: ptr.x - m.x * cs, y: ptr.y - m.y * cs })
   }, [scale, offset, stageRef])
 
-  const ghostOverlaps = useMemo(() => {
-    if (!ghostPos || toolMode === 'select' || !design) return false
-    const ghost: PlacedPanel = { id: '__check__', type: toolMode as PanelType, x: ghostPos.x, y: ghostPos.y, rotation: 0, color: '', snappedTo: null, vertices: [] }
-    return design.panels.some(p => panelsOverlap(p, ghost))
-  }, [ghostPos, toolMode, design])
-
   const handleMove = useCallback(() => {
     if (simMode) { setGhostPos(null); return }
     if (toolMode === 'select') { setGhostPos(null); return }
     setGhostPos(getPos())
   }, [simMode, toolMode, getPos])
 
+  const startPan = useCallback((e: Konva.KonvaEventObject<MouseEvent>, fromBlankSelect = false) => {
+    panning.current = true
+    blankSelectPan.current = fromBlankSelect
+    panMoved.current = false
+    lastP.current = { x: e.evt.clientX, y: e.evt.clientY }
+    setIsPanning(true)
+  }, [])
+
+  const stopPan = useCallback(() => {
+    if (blankSelectPan.current && !panMoved.current) onBlankClick()
+    panning.current = false
+    blankSelectPan.current = false
+    panMoved.current = false
+    setIsPanning(false)
+  }, [onBlankClick])
+
   const handleMouseDown = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
     if (simMode) return
-    if (e.evt.button === 1 || spaceHeld.current) { panning.current = true; lastP.current = { x: e.evt.clientX, y: e.evt.clientY }; return }
+    if (e.evt.button === 1 || spaceHeld.current) { startPan(e); return }
     if (toolMode !== 'select') {
       if (e.target === e.target.getStage()) {
         const p = getPos()
-        if (design) {
-          const ghost: PlacedPanel = { id: '__check__', type: toolMode as PanelType, x: p.x, y: p.y, rotation: 0, color: '', snappedTo: null, vertices: [] }
-          if (!design.panels.some(existing => panelsOverlap(existing, ghost))) {
-            onStageClick(p.x, p.y)
-          }
-        }
+        onStageClick(p.x, p.y)
       }
       return
     }
-    if (e.target === e.target.getStage()) onBlankClick()
-  }, [simMode, toolMode, getPos, onStageClick, onBlankClick, design])
+    if (e.target === e.target.getStage() && e.evt.button === 0) startPan(e, true)
+  }, [simMode, toolMode, getPos, onStageClick, design, startPan])
 
   const handleMouseMovePan = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
-    if (panning.current) { const dx = e.evt.clientX - lastP.current.x; const dy = e.evt.clientY - lastP.current.y; lastP.current = { x: e.evt.clientX, y: e.evt.clientY }; setOffset(o => ({ x: o.x + dx, y: o.y + dy })); return }
+    if (panning.current) {
+      const dx = e.evt.clientX - lastP.current.x
+      const dy = e.evt.clientY - lastP.current.y
+      lastP.current = { x: e.evt.clientX, y: e.evt.clientY }
+      if (Math.abs(dx) + Math.abs(dy) > 1) panMoved.current = true
+      setOffset(o => ({ x: o.x + dx, y: o.y + dy }))
+      return
+    }
     handleMove()
   }, [handleMove])
 
@@ -117,7 +132,7 @@ export default function CanvasStage({
     const candidate = findBestSnap({ type, x, y, rotation }, design.panels, new Set([id]), 20)
     let key: string | null = null
     if (candidate) {
-      key = `${candidate.targetPanelId}|${candidate.draggedConnectionIndex}|${candidate.targetConnectionIndex}|${candidate.isVertexSnap ?? false}`
+      key = `${candidate.targetPanelId}|${candidate.draggedConnectionIndex}|${candidate.targetConnectionIndex}`
     }
     if (key === prevSnapKey.current) return
     prevSnapKey.current = key
@@ -127,16 +142,11 @@ export default function CanvasStage({
       return
     }
 
-    const draggedEdgeIndices = connectionToEdgeIndices(type, candidate.draggedConnectionIndex, candidate.isVertexSnap)
-    const targetPanel = design.panels.find(p => p.id === candidate.targetPanelId)
-    if (!targetPanel) { setSnapHighlight(null); return }
-    const targetEdgeIndices = connectionToEdgeIndices(targetPanel.type, candidate.targetConnectionIndex, candidate.isVertexSnap)
-
     setSnapHighlight({
       draggedId: id,
-      draggedEdgeIndices,
+      draggedPointIndex: candidate.draggedConnectionIndex,
       targetId: candidate.targetPanelId,
-      targetEdgeIndices,
+      targetPointIndex: candidate.targetConnectionIndex,
     })
   }, [design])
 
@@ -147,16 +157,25 @@ export default function CanvasStage({
     return onPanelDragEnd(id, x, y)
   }, [onPanelDragEnd])
 
-  /** Resolve edge highlight indices for a given panel id */
-  const highlightEdgesFor = useCallback((id: string): number[] => {
+  /** Resolve point highlight indices for a given panel id */
+  const highlightPointsFor = useCallback((id: string): number[] => {
     if (!snapHighlight) return []
-    if (id === snapHighlight.draggedId) return snapHighlight.draggedEdgeIndices
-    if (id === snapHighlight.targetId) return snapHighlight.targetEdgeIndices
+    if (id === snapHighlight.draggedId) return [snapHighlight.draggedPointIndex]
+    if (id === snapHighlight.targetId) return [snapHighlight.targetPointIndex]
     return []
   }, [snapHighlight])
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', overflow: 'hidden', background: '#ffffff' }}>
+    <div
+      ref={containerRef}
+      style={{
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        background: '#ffffff',
+        cursor: isPanning ? 'grabbing' : toolMode === 'select' ? 'grab' : 'crosshair',
+      }}
+    >
       <Stage
         ref={stageRef}
         width={size.w} height={size.h}
@@ -164,7 +183,8 @@ export default function CanvasStage({
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMovePan}
-        onMouseUp={() => { panning.current = false }}
+        onMouseUp={stopPan}
+        onMouseLeave={stopPan}
       >
         <Layer listening={false}>
           <Rect x={-5000} y={-5000} width={10000} height={10000} fill="#ffffff" />
@@ -175,26 +195,15 @@ export default function CanvasStage({
             {design.panels.filter(p => p.snappedTo).map(p => {
               const target = design.panels.find(op => op.id === p.snappedTo!.panelId)
               if (!target) return null
-              const cp = getConnectionWorldPos(p, p.type, p.snappedTo!.connectionIndex)
+              const cp = getSnapPointWorldPos(target, p.snappedTo!.connectionIndex)
               if (!cp) return null
-              const edgeIndices = connectionToEdgeIndices(p.type, p.snappedTo!.connectionIndex)
-              if (edgeIndices.length === 0) return null
-              const geo = getPanelGeometry(p.type)
-              const ei = edgeIndices[0]
-              const v1 = geo.vertices[ei]
-              const v2 = geo.vertices[(ei + 1) % geo.vertices.length]
-              const edgeAngle = Math.atan2(v2.y - v1.y, v2.x - v1.x) + (p.rotation * Math.PI / 180)
-              const perpAngle = edgeAngle + Math.PI / 2
-              const tickLen = 8
               return (
-                <Line
+                <Circle
                   key={`conn-${p.id}-${p.snappedTo!.panelId}`}
-                  points={[
-                    cp.x - Math.cos(perpAngle) * tickLen,
-                    cp.y - Math.sin(perpAngle) * tickLen,
-                    cp.x + Math.cos(perpAngle) * tickLen,
-                    cp.y + Math.sin(perpAngle) * tickLen,
-                  ]}
+                  x={cp.x}
+                  y={cp.y}
+                  radius={5}
+                  fill="#10b981"
                   stroke="#ffffff"
                   strokeWidth={2}
                   listening={false}
@@ -210,7 +219,7 @@ export default function CanvasStage({
               panel={{ ...p, color: panelOverrides?.get(p.id) ?? p.color }}
               isSelected={selectedIds.has(p.id) && !simMode}
               simMode={simMode}
-              highlightedEdges={highlightEdgesFor(p.id)}
+              highlightedPoints={highlightPointsFor(p.id)}
               onDragStart={simMode ? undefined : () => onPanelDragStart(p.id)}
               onDragMove={simMode ? undefined : (x, y, r) => handleDragMove(p.id, p.type, x, y, r)}
               onDragEnd={simMode ? undefined : (x, y) => wrappedDragEnd(p.id, x, y)}
@@ -220,7 +229,7 @@ export default function CanvasStage({
           ))}
           {ghostPos && toolMode !== 'select' && (
             <CanvasShapePanel
-              panel={{ id: '__ghost__', type: toolMode as PanelType, x: ghostPos.x, y: ghostPos.y, rotation: 0, color: ghostOverlaps ? '#ef4444' : ghostColor, snappedTo: null, vertices: [] }}
+              panel={{ id: '__ghost__', type: toolMode as PanelType, x: ghostPos.x, y: ghostPos.y, rotation: 0, color: ghostColor, snappedTo: null, vertices: [] }}
               isSelected={false} isGhost
             />
           )}

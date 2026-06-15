@@ -17,6 +17,13 @@ export function dist(a: { x: number; y: number }, b: { x: number; y: number }): 
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
 }
 
+function rotateVec(x: number, y: number, deg: number): { x: number; y: number } {
+  const a = DEG(deg)
+  const c = Math.cos(a)
+  const s = Math.sin(a)
+  return { x: x * c - y * s, y: x * s + y * c }
+}
+
 export function getVertexWorldPos(
   panel: { x: number; y: number; rotation: number },
   type: PanelType,
@@ -25,26 +32,14 @@ export function getVertexWorldPos(
   const geo = getPanelGeometry(type)
   if (index < 0 || index >= geo.vertices.length) return null
   const v = geo.vertices[index]
-  const a = DEG(panel.rotation)
-  const c = Math.cos(a)
-  const s = Math.sin(a)
-  return { x: panel.x + v.x * c - v.y * s, y: panel.y + v.x * s + v.y * c }
+  const r = rotateVec(v.x, v.y, panel.rotation)
+  return { x: panel.x + r.x, y: panel.y + r.y }
 }
 
-function getEdgeMidpointWorldPos(
-  panel: { type: PanelType; x: number; y: number; rotation: number },
-  edgeIndex: number,
-): { x: number; y: number } | null {
-  const geo = getPanelGeometry(panel.type)
-  const nv = geo.vertices.length
-  if (edgeIndex < 0 || edgeIndex >= nv) return null
-  const vi = geo.vertices[edgeIndex]
-  const vj = geo.vertices[(edgeIndex + 1) % nv]
-  const mid = { x: (vi.x + vj.x) / 2, y: (vi.y + vj.y) / 2 }
-  const a = DEG(panel.rotation)
-  const c = Math.cos(a)
-  const s = Math.sin(a)
-  return { x: panel.x + mid.x * c - mid.y * s, y: panel.y + mid.x * s + mid.y * c }
+export interface SnapPoint {
+  index: number
+  x: number
+  y: number
 }
 
 export interface SnapCandidate {
@@ -54,7 +49,86 @@ export interface SnapCandidate {
   distance: number
   snapX: number
   snapY: number
-  isVertexSnap?: boolean
+}
+
+export function getSnapPointsLocal(type: PanelType): SnapPoint[] {
+  const geo = getPanelGeometry(type)
+  const points: SnapPoint[] = geo.vertices.map((v, index) => ({ index, x: v.x, y: v.y }))
+
+  if (type === 'triangle') {
+    for (let i = 0; i < geo.vertices.length; i++) {
+      const a = geo.vertices[i]
+      const b = geo.vertices[(i + 1) % geo.vertices.length]
+      points.push({
+        index: geo.vertices.length + i,
+        x: (a.x + b.x) / 2,
+        y: (a.y + b.y) / 2,
+      })
+    }
+  }
+
+  return points
+}
+
+export function getSnapPointsWorld(
+  panel: { type: PanelType; x: number; y: number; rotation: number },
+): SnapPoint[] {
+  return getSnapPointsLocal(panel.type).map(point => {
+    const r = rotateVec(point.x, point.y, panel.rotation)
+    return { index: point.index, x: panel.x + r.x, y: panel.y + r.y }
+  })
+}
+
+export function getSnapPointWorldPos(
+  panel: { type: PanelType; x: number; y: number; rotation: number },
+  index: number,
+): { x: number; y: number } | null {
+  return getSnapPointsWorld(panel).find(point => point.index === index) ?? null
+}
+
+function compareSnapCandidates(a: SnapCandidate, b: SnapCandidate): number {
+  return a.distance - b.distance
+}
+
+export function findSnapCandidates(
+  dragged: { type: PanelType; x: number; y: number; rotation: number },
+  allPanels: Array<{ id: string; type: PanelType; x: number; y: number; rotation: number }>,
+  excludedIds: Set<string>,
+  threshold = 20,
+): SnapCandidate[] {
+  const candidates: SnapCandidate[] = []
+  const seen = new Set<string>()
+  const snapDistance = Math.max(34, threshold * 1.7)
+  const draggedPoints = getSnapPointsWorld(dragged)
+
+  for (const other of allPanels) {
+    if (excludedIds.has(other.id)) continue
+    const otherPoints = getSnapPointsWorld(other)
+
+    for (const draggedPoint of draggedPoints) {
+      for (const otherPoint of otherPoints) {
+        const distance = dist(draggedPoint, otherPoint)
+        if (distance > snapDistance) continue
+
+        const snapX = dragged.x + (otherPoint.x - draggedPoint.x)
+        const snapY = dragged.y + (otherPoint.y - draggedPoint.y)
+        const key = `${other.id}|${otherPoint.index}|${draggedPoint.index}|${snapX.toFixed(2)}|${snapY.toFixed(2)}`
+        if (seen.has(key)) continue
+        seen.add(key)
+
+        candidates.push({
+          targetPanelId: other.id,
+          targetConnectionIndex: otherPoint.index,
+          draggedConnectionIndex: draggedPoint.index,
+          distance,
+          snapX,
+          snapY,
+        })
+      }
+    }
+  }
+
+  return candidates.sort(compareSnapCandidates)
 }
 
 export function findBestSnap(
@@ -63,84 +137,5 @@ export function findBestSnap(
   excludedIds: Set<string>,
   threshold = 20,
 ): SnapCandidate | null {
-  const draggedGeo = getPanelGeometry(dragged.type)
-  let best: SnapCandidate | null = null
-
-  for (const other of allPanels) {
-    if (excludedIds.has(other.id)) continue
-    const otherGeo = getPanelGeometry(other.type)
-
-    for (let di = 0; di < draggedGeo.connectionPoints.length; di++) {
-      const dp = getConnectionWorldPos(dragged, dragged.type, di)
-      if (!dp) continue
-
-      for (let oi = 0; oi < otherGeo.connectionPoints.length; oi++) {
-        const op = getConnectionWorldPos(other, other.type, oi)
-        if (!op) continue
-
-        const d = dist(dp, op)
-        if (d > threshold) continue
-
-        if (!best || d < best.distance) {
-          const snapped = computeSnappedPosition(dragged, dragged.type, di, op)
-          if (!snapped) continue
-          best = {
-            targetPanelId: other.id,
-            targetConnectionIndex: oi,
-            draggedConnectionIndex: di,
-            distance: d,
-            snapX: snapped.x,
-            snapY: snapped.y,
-          }
-        }
-      }
-    }
-  }
-
-  for (const other of allPanels) {
-    if (excludedIds.has(other.id)) continue
-    const otherGeo = getPanelGeometry(other.type)
-
-    for (let vi = 0; vi < draggedGeo.vertices.length; vi++) {
-      const vp = getVertexWorldPos(dragged, dragged.type, vi)
-      if (!vp) continue
-
-      for (let ei = 0; ei < otherGeo.vertices.length; ei++) {
-        const ep = getEdgeMidpointWorldPos(other, ei)
-        if (!ep) continue
-
-        const d = dist(vp, ep)
-        if (d > threshold) continue
-
-        if (!best || d < best.distance) {
-          best = {
-            targetPanelId: other.id,
-            targetConnectionIndex: ei,
-            draggedConnectionIndex: vi,
-            distance: d,
-            snapX: dragged.x + (ep.x - vp.x),
-            snapY: dragged.y + (ep.y - vp.y),
-            isVertexSnap: true,
-          }
-        }
-      }
-    }
-  }
-
-  return best
-}
-
-export function connectionToEdgeIndices(
-  type: PanelType,
-  connectionIndex: number,
-  isVertexSnap?: boolean,
-): number[] {
-  const nv = getPanelGeometry(type).vertices.length
-  if (isVertexSnap) {
-    return [(connectionIndex + nv - 1) % nv, connectionIndex]
-  }
-  if (type === 'triangle') {
-    return [Math.floor(connectionIndex / 2)]
-  }
-  return [connectionIndex]
+  return findSnapCandidates(dragged, allPanels, excludedIds, threshold)[0] ?? null
 }
