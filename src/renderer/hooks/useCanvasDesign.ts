@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { api } from '../api'
-import { panelsOverlap, getWorldVertices } from '../utils/panelGeometry'
+import { getWorldVertices } from '../utils/panelGeometry'
 import type { PanelType, PlacedPanel, CanvasDesign, CanvasDesignMeta } from '../../shared/canvas-types'
 
 export function useCanvasDesign() {
@@ -23,7 +23,11 @@ export function useCanvasDesign() {
   }, [design])
 
   const refreshDesigns = useCallback(async () => {
-    setDesigns(await api.listDesigns())
+    const nextDesigns = await api.listDesigns()
+    setDesigns([...nextDesigns].sort((a, b) => {
+      const byName = a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true })
+      return byName !== 0 ? byName : a.id.localeCompare(b.id)
+    }))
   }, [])
 
   useEffect(() => { refreshDesigns() }, [refreshDesigns])
@@ -79,7 +83,6 @@ export function useCanvasDesign() {
       snappedTo: null,
       vertices: getWorldVertices({ type, x, y, rotation: 0 }),
     }
-    if (design.panels.some(p => panelsOverlap(p, newPanel))) return
     pushUndo()
     setDesign({
       ...design,
@@ -139,6 +142,39 @@ export function useCanvasDesign() {
     setSelectedIds(new Set())
   }, [design, selectedIds, pushUndo])
 
+  const duplicateSelected = useCallback(() => {
+    if (!design || selectedIds.size === 0) return
+    const selectedPanels = design.panels.filter(p => selectedIds.has(p.id))
+    if (selectedPanels.length === 0) return
+
+    const idMap = new Map(selectedPanels.map(p => [p.id, crypto.randomUUID()]))
+    const copies = selectedPanels.map(p => {
+      const x = p.x + 32
+      const y = p.y + 32
+      const newId = idMap.get(p.id)!
+      const snappedTo = p.snappedTo && idMap.has(p.snappedTo.panelId)
+        ? { panelId: idMap.get(p.snappedTo.panelId)!, connectionIndex: p.snappedTo.connectionIndex }
+        : null
+
+      return {
+        ...p,
+        id: newId,
+        x,
+        y,
+        snappedTo,
+        vertices: getWorldVertices({ type: p.type, x, y, rotation: p.rotation }),
+      }
+    })
+
+    pushUndo()
+    setDesign({
+      ...design,
+      panels: [...design.panels, ...copies],
+      updatedAt: new Date().toISOString(),
+    })
+    setSelectedIds(new Set(copies.map(p => p.id)))
+  }, [design, selectedIds, pushUndo])
+
   const rotatePanel = useCallback((id: string, degrees: number) => {
     if (!design) return
     pushUndo()
@@ -175,6 +211,6 @@ export function useCanvasDesign() {
   return {
     design, designs, toolMode, selectedIds, setDesign, setToolMode, setSelectedIds,
     refreshDesigns, newDesign, loadDesign, saveDesign, deleteDesign, renameDesign,
-    addPanel, movePanel, movePanelEnd, batchUpdatePanels, updatePanelColor, deleteSelected, rotatePanel, selectAll, undo,
+    addPanel, movePanel, movePanelEnd, batchUpdatePanels, updatePanelColor, deleteSelected, duplicateSelected, rotatePanel, selectAll, undo,
   }
 }

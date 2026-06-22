@@ -4,6 +4,7 @@ import ToggleButton from '@mui/material/ToggleButton'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
 import DeleteIcon from '@mui/icons-material/Delete'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import UndoIcon from '@mui/icons-material/Undo'
 import ImageIcon from '@mui/icons-material/Image'
 import NearMeIcon from '@mui/icons-material/NearMe'
@@ -18,6 +19,7 @@ interface Props {
   toolMode: ToolMode
   onToolChange: (m: ToolMode) => void
   onDelete: () => void
+  onDuplicate: () => void
   onUndo: () => void
   onExport: () => void
   onAIGenerate: () => void
@@ -26,8 +28,15 @@ interface Props {
 }
 
 export default function CanvasToolbar({
-  toolMode, onToolChange, onDelete, onUndo, onExport, onAIGenerate,
-  canvasMode, onCanvasModeChange,
+  toolMode,
+  onToolChange,
+  onDelete,
+  onDuplicate,
+  onUndo,
+  onExport,
+  onAIGenerate,
+  canvasMode,
+  onCanvasModeChange,
 }: Props) {
   return (
     <Paper elevation={1} sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1, borderBottom: 1, borderColor: 'divider' }}>
@@ -42,10 +51,11 @@ export default function CanvasToolbar({
         <>
           <ToggleButtonGroup value={toolMode} exclusive onChange={(_, v) => v && onToolChange(v)} size="small">
             <ToggleButton value="select"><NearMeIcon fontSize="small" /></ToggleButton>
-            <ToggleButton value="hexagon">⬡</ToggleButton>
+            <ToggleButton value="hexagon">⬢</ToggleButton>
             <ToggleButton value="triangle">△</ToggleButton>
-            <ToggleButton value="mini-triangle">▽</ToggleButton>
+            <ToggleButton value="mini-triangle">▵</ToggleButton>
           </ToggleButtonGroup>
+          <Tooltip title="复制选中 (Ctrl+D)"><IconButton size="small" onClick={onDuplicate}><ContentCopyIcon fontSize="small" /></IconButton></Tooltip>
           <Tooltip title="删除选中 (Delete)"><IconButton size="small" onClick={onDelete}><DeleteIcon fontSize="small" /></IconButton></Tooltip>
           <Tooltip title="撤销 (Ctrl+Z)"><IconButton size="small" onClick={onUndo}><UndoIcon fontSize="small" /></IconButton></Tooltip>
           <Paper elevation={0} sx={{ width: 1, height: 24, bgcolor: 'divider', mx: 0.5 }} />

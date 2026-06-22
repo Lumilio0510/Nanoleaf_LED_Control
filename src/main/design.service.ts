@@ -15,7 +15,10 @@ export function listDesigns(): CanvasDesignMeta[] {
   return files.map(f => {
     const design: CanvasDesign = JSON.parse(readFileSync(join(getDesignsDir(), f), 'utf-8'))
     return { id: design.id, name: design.name, updatedAt: design.updatedAt }
-  }).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+  }).sort((a, b) => {
+    const byName = a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true })
+    return byName !== 0 ? byName : a.id.localeCompare(b.id)
+  })
 }
 
 export function loadDesign(id: string): CanvasDesign | null {
